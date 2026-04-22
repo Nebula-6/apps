@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Quantum Sand Engine</title>
+<style>
+:root {
+  --bg:#08080e; --panel:#0f0f18; --border:#1a1a2e; --text:#e2e8f0;
+  --sub:#475569; --accent:#f59e0b; --accent2:#06b6d4; --danger:#ef4444;
+  --ok:#22c55e; --elec:#fde047;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Courier New',monospace;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  padding:14px 10px;gap:10px;user-select:none}
+header{text-align:center}
+h1{font-size:1.6rem;color:var(--accent);letter-spacing:5px;
+   text-shadow:0 0 24px rgba(245,158,11,.45)}
+.tagline{color:var(--sub);font-size:.7rem;letter-spacing:2px;margin-top:2px}
+.workspace{display:flex;gap:14px;align-items:flex-start;max-width:1120px;width:100%}
+canvas{border:1px solid var(--border);border-radius:4px;cursor:crosshair;
+       image-rendering:pixelated;display:block;
+       box-shadow:0 0 40px rgba(245,158,11,.08),0 4px 24px rgba(0,0,0,.6)}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:8px;
+       padding:14px;width:330px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
+/* Buttons */
+.btn{padding:6px 10px;font-family:inherit;font-size:11px;font-weight:700;
+     letter-spacing:1px;border:1px solid var(--border);border-radius:3px;
+     background:#13131f;color:var(--text);cursor:pointer;transition:all .1s;
+     text-transform:uppercase;white-space:nowrap}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.act{background:var(--accent);color:#000;border-color:var(--accent)}
+.btn.act2{background:var(--accent2);color:#000;border-color:var(--accent2)}
+.btn.red{border-color:var(--danger)}
+.btn.red:hover{background:var(--danger);color:#fff}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+/* Brush */
+.brush-row{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--sub)}
+.brush-row input[type=range]{flex:1;accent-color:var(--accent);height:4px}
+.bval{color:var(--accent);font-weight:700;min-width:16px;text-align:center}
+/* Stats */
+.stats{display:flex;justify-content:space-between;font-size:10px;color:var(--sub);
+       border-bottom:1px solid var(--border);padding-bottom:8px}
+.stats span{color:var(--accent2);font-weight:700}
+/* Search */
+.search input{width:100%;background:#0a0a12;border:1px solid var(--border);
+  border-radius:3px;color:var(--text);font-family:inherit;font-size:11px;
+  padding:6px 10px;outline:none}
+.search input:focus{border-color:var(--accent)}
+/* Element grid */
+.el-grid{display:flex;flex-wrap:wrap;gap:5px;max-height:290px;overflow-y:auto;
+         padding:2px 0}
+.el-grid::-webkit-scrollbar{width:4px}
+.el-grid::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.el-btn{padding:4px 8px;font-family:inherit;font-size:10px;font-weight:700;
+        letter-spacing:.5px;border:1px solid rgba(255,255,255,.12);border-radius:3px;
+        cursor:pointer;transition:transform .1s,filter .1s;white-space:nowrap}
+.el-btn:hover{transform:translateY(-1px);filter:brightness(1.25)}
+.el-btn.active{outline:2px solid #fff;outline-offset:1px;transform:scale(1.06)}
+/* Section label */
+.lbl{font-size:9px;letter-spacing:2px;color:var(--sub);text-transform:uppercase;
+     border-bottom:1px solid var(--border);padding-bottom:3px;width:100%;margin-top:2px}
+/* Legend */
+.legend{font-size:9px;color:var(--sub);line-height:1.6;border-top:1px solid var(--border);
+        padding-top:8px;column-count:2;column-gap:8px}
+.legend b{color:var(--accent)}
+/* Toast */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+       background:var(--ok);color:#000;padding:7px 18px;border-radius:3px;
+       font-family:inherit;font-size:12px;font-weight:700;letter-spacing:1px;
+       opacity:0;transition:opacity .3s;pointer-events:none;z-index:9999}
+#toast.show{opacity:1}
+/* Cursor ghost */
+#ghost{position:fixed;border:1px solid rgba(255,255,255,.4);border-radius:50%;
+       pointer-events:none;transform:translate(-50%,-50%);z-index:100}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⚛ QUANTUM SAND</h1>
+  <div class="tagline">Pixel Physics Engine v3.0 — Optimised Cellular Automata + Alchemy + Electricity</div>
+</header>
+
+<div class="workspace">
+  <canvas id="canvas" width="500" height="500"></canvas>
+
+  <div class="panel">
+    <!-- Sim controls -->
+    <div class="row">
+      <button class="btn act" id="btnPlay"  onclick="simCtrl('play')">▶ PLAY</button>
+      <button class="btn"     id="btnPause" onclick="simCtrl('pause')">⏸ PAUSE</button>
+      <button class="btn"     id="btnStep"  onclick="simCtrl('step')">⏭ STEP</button>
+      <button class="btn"     onclick="clearCanvas()">✕ CLR</button>
+    </div>
+
+    <!-- Brush -->
+    <div class="brush-row">
+      <span>BRUSH</span>
+      <input type="range" id="bslider" min="1" max="14" value="3"
+             oninput="brushSize=+this.value;document.getElementById('bval').textContent=this.value">
+      <span class="bval" id="bval">3</span>
+      <span style="color:#374151">[ / ]</span>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div>FPS <span id="sFps">--</span></div>
+      <div>CELLS <span id="sCells">0</span></div>
+      <div>CHUNKS <span id="sChunks">0</span></div>
+      <div>DISC <span id="sDisc">0</span></div>
+    </div>
+
+    <!-- Search -->
+    <div class="search"><input id="srch" type="text" placeholder="Search materials…" oninput="buildUI()"></div>
+
+    <!-- Element buttons -->
+    <div class="el-grid" id="elGrid"></div>
+
+    <!-- Actions -->
+    <div class="row">
+      <button class="btn act2" onclick="setEl(0)">⌫ ERASE</button>
+      <button class="btn" onclick="saveCanvas()">💾 SAVE</button>
+      <button class="btn" onclick="loadCanvas()">📂 LOAD</button>
+      <button class="btn red" onclick="hardReset()">⚠ WIPE</button>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <b>SPACE</b> pause &nbsp; <b>[ ]</b> brush<br>
+      <b>E</b> erase &nbsp; <b>C</b> clear<br>
+      <b>S</b> save state &nbsp; <b>L</b> load<br>
+      <b>RClick</b> erase spot
+    </div>
+  </div>
+</div>
+
+<div id="toast">✦ Discovery!</div>
+<div id="ghost"></div>
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════════════════════
+//  CONSTANTS & TYPES
+// ═══════════════════════════════════════════════════════════
+const COLS=100, ROWS=100, CELL=5;
+
+// Type codes
+const T={EMPTY:0,POWDER:1,LIQUID:2,GAS:3,FIRE:4,SOLID:5,MOVE:6,VOID:7};
+
+// ═══════════════════════════════════════════════════════════
+//  ELEMENT DEFINITIONS
+//  Flags: hot, cold, burn (flammable), cond (conductive),
+//         wire, batt (battery), acid, expl (explosive),
+//         clone, void (destroyer)
+// ═══════════════════════════════════════════════════════════
+const BASE = [
+  {name:'Empty',    col:'#000011',type:T.EMPTY},                      // 0
+  {name:'Sand',     col:'#c2a35a',type:T.POWDER},                     // 1
+  {name:'Water',    col:'#1d4ed8',type:T.LIQUID},                     // 2
+  {name:'Fire',     col:'#f97316',type:T.FIRE,  hot:1},               // 3
+  {name:'Smoke',    col:'#6b7280',type:T.GAS},                        // 4
+  {name:'Metal',    col:'#94a3b8',type:T.SOLID, cond:1},              // 5
+  {name:'HotMetal', col:'#ef4444',type:T.SOLID, cond:1, hot:1},       // 6
+  {name:'Steam',    col:'#bfdbfe',type:T.GAS},                        // 7
+  {name:'Piston',   col:'#eab308',type:T.MOVE},                       // 8
+  {name:'Wood',     col:'#854d0e',type:T.SOLID, burn:1},              // 9
+  {name:'Oil',      col:'#78350f',type:T.LIQUID,burn:1},              // 10
+  {name:'Ice',      col:'#bae6fd',type:T.SOLID, cold:1},              // 11
+  {name:'Wire',     col:'#b45309',type:T.SOLID, cond:1, wire:1},      // 12
+  {name:'Battery',  col:'#15803d',type:T.SOLID, cond:1, batt:1},      // 13
+  {name:'Spark',    col:'#fde047',type:T.SOLID, cond:1, wire:1,spark:1},// 14 – powered wire
+  {name:'Void',     col:'#1e1b4b',type:T.VOID},                       // 15
+  {name:'Gunpowder',col:'#374151',type:T.POWDER,burn:1,expl:1},       // 16
+  {name:'Acid',     col:'#65a30d',type:T.LIQUID,acid:1},              // 17
+  {name:'Snow',     col:'#dde9f5',type:T.POWDER,cold:1},              // 18
+  {name:'Lava',     col:'#dc2626',type:T.LIQUID,hot:1},               // 19
+  {name:'Clone',    col:'#7c3aed',type:T.SOLID, clone:1},             // 20
+  {name:'FlammGas', col:'#a7f3d0',type:T.GAS,   burn:1},              // 21
+];
+
+// Alchemy table: keys are SORTED element names joined with +
+const ALCHEMY={
+  'Fire+Wood':      {name:'Charcoal',col:'#1c1917',type:T.SOLID,burn:1},
+  'Fire+Snow':      {name:'Water',   col:'#1d4ed8',type:T.LIQUID},     // → existing
+  'Ice+Lava':       {name:'Obsidian',col:'#171717',type:T.SOLID},
+  'Lava+Water':     {name:'Stone',   col:'#78716c',type:T.SOLID},
+  'Lava+Sand':      {name:'Glass',   col:'#a8d5e2',type:T.SOLID},
+  'Metal+Acid':     {name:'Rust',    col:'#b45309',type:T.POWDER},
+  'Mud+Fire':       {name:'Brick',   col:'#b45309',type:T.SOLID},
+  'Sand+Fire':      {name:'Glass',   col:'#a8d5e2',type:T.SOLID},
+  'Sand+Water':     {name:'Mud',     col:'#5c4033',type:T.LIQUID},
+  'Water+Ash':      {name:'Cement',  col:'#9ca3af',type:T.LIQUID},
+  'Cement+Sand':    {name:'Concrete',col:'#4b5563',type:T.SOLID},
+  'Charcoal+Fire':  {name:'Ash',     col:'#b2beb5',type:T.POWDER},
+  'Acid+Stone':     {name:'Acid',    col:'#65a30d',type:T.LIQUID},     // acid eats stone, result stays acid
+  'Ice+Water':      {name:'Slush',   col:'#93c5fd',type:T.LIQUID},
+  'Smoke+Water':    {name:'Acid',    col:'#65a30d',type:T.LIQUID,acid:1},
+  'FlammGas+Fire':  {name:'Fire',    col:'#f97316',type:T.FIRE,hot:1}, // gas ignites
+  'Oil+Fire':       {name:'Fire',    col:'#f97316',type:T.FIRE,hot:1},
+};
+
+const STARTERS=[1,2,3,4,5,7,8,9,10,11,12,13,15,16,17,18,19,20,21];
+
+// ═══════════════════════════════════════════════════════════
+//  CANVAS & RENDERING
+// ═══════════════════════════════════════════════════════════
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+const imgData=ctx.createImageData(canvas.width,canvas.height);
+const pixels=new Uint32Array(imgData.data.buffer);
+
+// ═══════════════════════════════════════════════════════════
+//  SIMULATION BUFFERS
+// ═══════════════════════════════════════════════════════════
+let grid    =new Uint16Array(COLS*ROWS); // current frame
+let nxt     =new Uint16Array(COLS*ROWS); // next frame (double-buffer)
+let elec    =new Uint8Array(COLS*ROWS);  // electricity this frame (BFS result)
+// NOTE: No chunk/dirty system — 100×100=10k cells is trivially fast to scan fully
+
+// ═══════════════════════════════════════════════════════════
+//  ELEMENT REGISTRY & COLOR LUT
+// ═══════════════════════════════════════════════════════════
+let EL=BASE.map((e,i)=>({...e,id:i})); // grows with discoveries
+let colorLUT=new Uint32Array(65536);    // id → Uint32 ABGR for ImageData
+let unlocked=[];
+let recipes={};    // canonical key → result element ID (or false)
+let ID={};         // name → id quick lookup
+let genLock=false; // alchemy mutex
+
+function hexToU32(hex){
+  const r=parseInt(hex.slice(1,3),16)||0;
+  const g=parseInt(hex.slice(3,5),16)||0;
+  const b=parseInt(hex.slice(5,7),16)||0;
+  return(255<<24)|(b<<16)|(g<<8)|r; // ABGR LE
+}
+function rebuildLUT(){
+  EL.forEach((e,i)=>{if(e)colorLUT[i]=hexToU32(e.col||'#000000');});
+}
+function rebuildID(){ID={};EL.forEach((e,i)=>{if(e)ID[e.name]=i;});}
+
+// No dirty-chunk wake() needed — full grid scan each frame
+
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+let currentEl=1, brushSize=3, paused=false, stepOnce=false, frame=0;
+let isDrawing=false, fpsV=0, fpsT=performance.now(), fpsC=0;
+let activeCells=0;
+let toastTid=null;
+let mouseX=-1, mouseY=-1;
+const ghost=document.getElementById('ghost');
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+function init(){
+  loadSave();
+  rebuildLUT();
+  rebuildID();
+  buildUI();
+  initInput();
+  requestAnimationFrame(loop);
+}
+
+function loadSave(){
+  try{
+    const raw=localStorage.getItem('qsand_v3');
+    if(raw){
+      const d=JSON.parse(raw);
+      if(d.elements) d.elements.forEach((e,i)=>{if(i>=BASE.length&&e)EL[i]=e;});
+      if(d.unlocked) unlocked=d.unlocked.map(Number);
+      if(d.recipes)  recipes=d.recipes;
+    }
+  }catch(e){}
+  STARTERS.forEach(id=>{if(!unlocked.includes(id))unlocked.push(id);});
+  // Ensure HotMetal(6) and Spark(14) are accessible even if not in starters
+  // They appear via gameplay
+}
+
+function persist(){
+  localStorage.setItem('qsand_v3',JSON.stringify({
+    elements:EL.map(e=>e?{name:e.name,col:e.col,type:e.type,
+      hot:e.hot,cold:e.cold,burn:e.burn,cond:e.cond,wire:e.wire,
+      batt:e.batt,acid:e.acid,expl:e.expl,clone:e.clone}:null),
+    unlocked, recipes
+  }));
+}
+
+window.hardReset=()=>{
+  if(confirm('Wipe all discoveries and canvas?')){
+    localStorage.removeItem('qsand_v3');
+    localStorage.removeItem('qsand_canvas');
+    location.reload();
+  }
+};
+
+// ═══════════════════════════════════════════════════════════
+//  INPUT
+// ═══════════════════════════════════════════════════════════
+function initInput(){
+  canvas.addEventListener('mousedown',e=>{
+    if(e.button===2){currentEl=0;buildUI();}
+    isDrawing=true; paint(e);
+  });
+  window.addEventListener('mouseup',()=>isDrawing=false);
+  canvas.addEventListener('mousemove',e=>{
+    if(isDrawing)paint(e);
+    const r=canvas.getBoundingClientRect();
+    mouseX=e.clientX; mouseY=e.clientY;
+    updateGhost();
+  });
+  canvas.addEventListener('mouseleave',()=>{ghost.style.display='none';});
+  canvas.addEventListener('mouseenter',()=>{ghost.style.display='block';});
+  canvas.addEventListener('contextmenu',e=>e.preventDefault());
+
+  // Touch
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();isDrawing=true;paint(e.touches[0]);},{passive:false});
+  canvas.addEventListener('touchend',()=>isDrawing=false);
+  canvas.addEventListener('touchmove',e=>{e.preventDefault();if(isDrawing)paint(e.touches[0]);},{passive:false});
+
+  window.addEventListener('keydown',onKey);
+}
+
+function updateGhost(){
+  const s=(brushSize*2+1)*CELL;
+  ghost.style.cssText=`width:${s}px;height:${s}px;left:${mouseX}px;top:${mouseY}px;
+    border-color:${EL[currentEl]?EL[currentEl].col:'#fff'};display:block;
+    position:fixed;border:1.5px solid;border-radius:50%;pointer-events:none;
+    transform:translate(-50%,-50%);z-index:100;opacity:.6`;
+}
+
+function paint(e){
+  const r=canvas.getBoundingClientRect();
+  const mx=((e.clientX-r.left)/r.width*COLS)|0;
+  const my=((e.clientY-r.top)/r.height*ROWS)|0;
+  const bs=brushSize;
+  const el=EL[currentEl];
+
+  for(let dy=-bs;dy<=bs;dy++){
+    for(let dx=-bs;dx<=bs;dx++){
+      if(dx*dx+dy*dy>bs*bs)continue;
+      const x=mx+dx, y=my+dy;
+      if(x<0||x>=COLS||y<0||y>=ROWS)continue;
+      if(currentEl===0){
+        grid[y*COLS+x]=0;
+      } else if(el){
+        if(el.type===T.SOLID||el.type===T.MOVE||el.type===T.VOID){
+          grid[y*COLS+x]=currentEl;
+        } else {
+          if(Math.random()>0.3) grid[y*COLS+x]=currentEl;
+        }
+      }
+    }
+  }
+}
+
+function onKey(e){
+  // Never steal keypresses from text inputs
+  if(document.activeElement&&document.activeElement.tagName==='INPUT') return;
+  const k=e.key;
+  if(k===' '){paused=!paused;updateSimBtns();e.preventDefault();}
+  if(k===']'){brushSize=Math.min(14,brushSize+1);syncBrush();}
+  if(k==='['){brushSize=Math.max(1,brushSize-1);syncBrush();}
+  if(k==='e'||k==='E'){currentEl=0;buildUI();}
+  if(k==='c'||k==='C') clearCanvas();
+  if(k==='s'&&!e.ctrlKey) saveCanvas();
+  if(k==='l'&&!e.ctrlKey) loadCanvas();
+}
+function syncBrush(){
+  document.getElementById('bslider').value=brushSize;
+  document.getElementById('bval').textContent=brushSize;
+  updateGhost();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SIM CONTROLS
+// ═══════════════════════════════════════════════════════════
+window.simCtrl=function(cmd){
+  if(cmd==='play') {paused=false;stepOnce=false;}
+  if(cmd==='pause'){paused=true; stepOnce=false;}
+  if(cmd==='step') {paused=true; stepOnce=true;}
+  updateSimBtns();
+};
+window.clearCanvas=()=>{grid.fill(0);nxt.fill(0);};
+function updateSimBtns(){
+  const btnPlay =document.getElementById('btnPlay');
+  const btnPause=document.getElementById('btnPause');
+  const btnStep =document.getElementById('btnStep');
+  // Reset all to plain state first
+  btnPlay.className ='btn';
+  btnPause.className='btn';
+  btnStep.className ='btn';
+  // Highlight the active one
+  if(!paused)                 btnPlay.className ='btn act';
+  else if(paused&&!stepOnce)  btnPause.className='btn act';
+  else if(paused&& stepOnce)  btnStep.className ='btn act2';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CANVAS SAVE / LOAD
+// ═══════════════════════════════════════════════════════════
+window.saveCanvas=()=>{
+  try{localStorage.setItem('qsand_canvas',JSON.stringify(Array.from(grid)));toast('💾 Canvas saved!');}
+  catch(e){toast('Save failed — canvas too large for storage');}
+};
+window.loadCanvas=()=>{
+  try{
+    const raw=localStorage.getItem('qsand_canvas');
+    if(!raw){toast('No saved canvas found!');return;}
+    const arr=JSON.parse(raw);
+    for(let i=0;i<grid.length;i++) grid[i]=arr[i]||0;
+    toast('📂 Canvas loaded!');
+  }catch(e){toast('Load failed!');}
+};
+
+// ═══════════════════════════════════════════════════════════
+//  MAIN LOOP
+// ═══════════════════════════════════════════════════════════
+function loop(ts){
+  requestAnimationFrame(loop);
+  fpsC++;
+  if(ts-fpsT>=600){
+    fpsV=Math.round(fpsC*1000/(ts-fpsT));
+    fpsT=ts; fpsC=0;
+    document.getElementById('sFps').textContent=fpsV;
+    document.getElementById('sCells').textContent=activeCells;
+    document.getElementById('sChunks').textContent='—';
+  }
+  if(!paused||stepOnce){
+    stepOnce=false;
+    tick();
+    frame++;
+  }
+  render();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ELECTRICITY BFS
+// ═══════════════════════════════════════════════════════════
+function electricityPass(){
+  elec.fill(0);
+  const q=[];
+  for(let i=0;i<grid.length;i++){
+    const e=EL[grid[i]];
+    if(e&&e.batt){elec[i]=1;q.push(i);}
+  }
+  let qi=0;
+  while(qi<q.length){
+    const i=q[qi++];
+    const x=i%COLS, y=(i/COLS)|0;
+    const nbrs=[
+      y>0      ?i-COLS:-1,
+      y<ROWS-1 ?i+COLS:-1,
+      x>0      ?i-1:-1,
+      x<COLS-1 ?i+1:-1
+    ];
+    for(const ni of nbrs){
+      if(ni<0||elec[ni])continue;
+      const ne=EL[grid[ni]];
+      if(!ne||!ne.cond)continue;
+      elec[ni]=1;
+      q.push(ni);
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TICK (CELLULAR AUTOMATA UPDATE)
+// ═══════════════════════════════════════════════════════════
+function tick(){
+  // ── 1. Electricity pass ──────────────────────────────────
+  electricityPass();
+
+  // ── 2. Update Wire↔Spark visuals ────────────────────────
+  const wId=ID['Wire']??12, spId=ID['Spark']??14;
+  for(let i=0;i<grid.length;i++){
+    const id=grid[i];
+    if(id===wId&&elec[i])  grid[i]=spId;
+    else if(id===spId&&!elec[i]) grid[i]=wId;
+  }
+
+  // ── 3. Full-grid double-buffer physics ───────────────────
+  // Copy current grid into next-frame buffer
+  nxt.set(grid);
+
+  // Alternate left→right and right→left each frame to eliminate bias
+  const lr=(frame&1)===0;
+
+  // Sweep bottom-to-top so gravity works naturally
+  for(let y=ROWS-1;y>=0;y--){
+    for(let xBase=0;xBase<COLS;xBase++){
+      const x=lr ? xBase : COLS-1-xBase;
+      updateCell(x,y);
+    }
+  }
+
+  // Count active cells periodically for the stats display
+  if(frame%20===0){
+    activeCells=0;
+    for(let i=0;i<grid.length;i++) if(grid[i]!==0) activeCells++;
+  }
+
+  // Swap buffers — grid becomes the freshly computed frame
+  const tmp=grid; grid=nxt; nxt=tmp;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CELL UPDATE  (hot path — keep allocation-free)
+// ═══════════════════════════════════════════════════════════
+function rg(x,y){return(x<0||x>=COLS||y<0||y>=ROWS)?-1:grid[y*COLS+x];}
+function rn(x,y){return(x<0||x>=COLS||y<0||y>=ROWS)?-1:nxt[y*COLS+x];}
+
+function put(x,y,id){
+  if(x<0||x>=COLS||y<0||y>=ROWS)return;
+  nxt[y*COLS+x]=id;
+}
+
+function updateCell(x,y){
+  const idx=y*COLS+x;
+  const id=grid[idx];
+  if(id===0)return;
+
+  // Skip if cell already moved/replaced this frame
+  if(nxt[idx]!==id)return;
+
+  const el=EL[id];
+  if(!el)return;
+
+  const isPowered=elec[idx]===1;
+
+  // ── VOID: destroys neighbors ─────────────────────────────
+  if(el.type===T.VOID){
+    const nb4=[[0,1],[0,-1],[1,0],[-1,0]];
+    for(const[dx,dy]of nb4){
+      const nx=x+dx,ny=y+dy,ni=ny*COLS+nx;
+      const nid=rg(nx,ny);
+      if(nid>0&&nxt[ni]===nid&&Math.random()<0.4){put(nx,ny,0);}
+    }
+    nxt[idx]=id; return;
+  }
+
+  // ── CLONE: emits copies of adjacent material ─────────────
+  if(el.clone){
+    const nb4=[[0,1],[0,-1],[1,0],[-1,0]];
+    for(const[dx,dy]of nb4){
+      const nx=x+dx,ny=y+dy;
+      const nid=rg(nx,ny);
+      if(nid>0&&nid!==id){
+        // Emit copy to another empty neighbor
+        for(const[ex,ey]of nb4){
+          const ex2=x+ex,ey2=y+ey;
+          if(rg(ex2,ey2)===0&&rn(ex2,ey2)===0&&Math.random()<0.08){
+            put(ex2,ey2,nid);
+          }
+        }
+        break;
+      }
+    }
+    nxt[idx]=id; return;
+  }
+
+  // ── ELECTRICITY EFFECTS on this cell ─────────────────────
+  if(isPowered){
+    // Powered piston: thrust upward
+    if(el.type===T.MOVE&&y>0&&rg(x,y-1)===0&&rn(x,y-1)===0){
+      put(x,y-1,id); put(x,y,0); return;
+    }
+    // Powered wire/spark ignites flammable neighbors
+    if(el.wire||el.spark){
+      for(const[dx,dy]of[[0,1],[0,-1],[1,0],[-1,0]]){
+        const nx=x+dx,ny=y+dy,nid=rg(nx,ny);
+        if(nid>0&&EL[nid]&&EL[nid].burn&&Math.random()<0.04)
+          {put(nx,ny,ID['Fire']??3);}
+      }
+    }
+  }
+
+  // ── NEIGHBOR INTERACTIONS ─────────────────────────────────
+  let iHot=false, iCold=false;
+  const nb4=[[0,1],[0,-1],[1,0],[-1,0]];
+
+  for(const[dx,dy]of nb4){
+    const nx=x+dx, ny=y+dy;
+    const nid=rg(nx,ny);
+    if(nid<0||nid===0)continue;
+    const ne=EL[nid];
+    if(!ne)continue;
+    if(ne.hot) iHot=true;
+    if(ne.cold) iCold=true;
+
+    // ── Thermodynamics ───────────────────────────────────
+    // Water → Steam near heat
+    if(id===(ID['Water']??2)&&ne.hot&&Math.random()<0.25){
+      put(x,y,ID['Steam']??7); return;
+    }
+    // Metal → HotMetal near heat
+    if(id===(ID['Metal']??5)&&ne.hot&&Math.random()<0.08){
+      put(x,y,ID['HotMetal']??6); return;
+    }
+    // Ice/Snow → Water near heat
+    if((el.cold&&el.type===T.SOLID||id===(ID['Snow']??18))&&ne.hot&&Math.random()<0.18){
+      put(x,y,ID['Water']??2); return;
+    }
+    // Water → Ice near cold source (passive, slow)
+    if(id===(ID['Water']??2)&&ne.cold&&Math.random()<0.02){
+      put(x,y,ID['Ice']??11); return;
+    }
+    // HotMetal → cools Water touching it
+    if(id===(ID['HotMetal']??6)&&nid===(ID['Water']??2)&&Math.random()<0.15){
+      put(nx,ny,ID['Steam']??7); put(x,y,ID['Metal']??5); return;
+    }
+
+    // ── Fire spreading ───────────────────────────────────
+    if(id===(ID['Fire']??3)&&ne.burn&&Math.random()<0.012){
+      put(nx,ny,ID['Fire']??3);
+    }
+    // Flammable Gas explosion
+    if(nid===(ID['FlammGas']??21)&&el.hot&&Math.random()<0.15){
+      explode(nx,ny,5); return;
+    }
+    // Gunpowder explosion
+    if(id===(ID['Gunpowder']??16)&&ne.hot&&Math.random()<0.6){
+      explode(x,y,9); return;
+    }
+
+    // ── Acid corrosion ────────────────────────────────────
+    if(el.acid&&ne.type===T.SOLID&&!ne.acid&&Math.random()<0.004){
+      put(nx,ny,0); put(x,y,0); return;
+    }
+
+    // ── Alchemy ───────────────────────────────────────────
+    if(nid!==id&&!genLock){
+      const res=checkAlchemy(id,nid,x,y,nx,ny);
+      if(res!==null){ return; } // put() already called inside
+    }
+  }
+
+  // ── Natural decay / state changes ─────────────────────────
+  // HotMetal cools when not touching heat
+  if(id===(ID['HotMetal']??6)&&!iHot&&Math.random()<0.004){
+    put(x,y,ID['Metal']??5); return;
+  }
+  // Steam condenses at top or near cold
+  if(id===(ID['Steam']??7)&&(y<ROWS/5&&Math.random()<0.018||iCold&&Math.random()<0.08)){
+    put(x,y,ID['Water']??2); return;
+  }
+  // Fire dissipates randomly
+  if(el.type===T.FIRE&&Math.random()<0.035){
+    put(x,y,Math.random()<0.25?(ID['Smoke']??4):0); return;
+  }
+  // Spark visual flicker (not needed, handled via electric pass)
+
+  // ── MOVEMENT ──────────────────────────────────────────────
+  moveCell(x,y,id,el,idx);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MOVEMENT RULES
+// ═══════════════════════════════════════════════════════════
+// Move a cell from (x,y) to (tx,ty) in the next-frame buffer.
+// Only checks nxt[] so we don't double-block with the source grid.
+function tryMv(x,y,tx,ty,id){
+  if(tx<0||tx>=COLS||ty<0||ty>=ROWS)return false;
+  if(nxt[ty*COLS+tx]!==0)return false; // destination already occupied in new frame
+  nxt[ty*COLS+tx]=id;
+  nxt[y*COLS+x]=0;
+  return true;
+}
+
+function moveCell(x,y,id,el,idx){
+  // Solids: static
+  if(el.type===T.SOLID||el.type===T.VOID||el.clone){
+    nxt[idx]=id; return;
+  }
+
+  // Movable solid (Piston): gravity only
+  if(el.type===T.MOVE){
+    if(!tryMv(x,y,x,y+1,id)) nxt[idx]=id;
+    return;
+  }
+
+  // Powder: fall → diagonal slide
+  if(el.type===T.POWDER){
+    if(tryMv(x,y,x,y+1,id)) return;
+    const d=(Math.random()<0.5)?1:-1;
+    if(tryMv(x,y,x+d,y+1,id)) return;
+    if(tryMv(x,y,x-d,y+1,id)) return;
+    nxt[idx]=id; return;
+  }
+
+  // Liquid: fall → diagonal → horizontal spread
+  if(el.type===T.LIQUID){
+    if(tryMv(x,y,x,y+1,id)) return;
+    const d=(Math.random()<0.5)?1:-1;
+    if(tryMv(x,y,x+d,y+1,id)) return;
+    if(tryMv(x,y,x-d,y+1,id)) return;
+    // Horizontal spread — up to 3 cells for realistic flow
+    for(let s=1;s<=3;s++){
+      const rd=Math.random()<0.5;
+      if(tryMv(x,y,x+(rd?s:-s),y,id)) return;
+      if(tryMv(x,y,x+(rd?-s:s),y,id)) return;
+    }
+    nxt[idx]=id; return;
+  }
+
+  // Gas: rise, spread, optional piston push
+  if(el.type===T.GAS){
+    // Piston push: gas below piston pushes it up
+    if(y>0){
+      const abv=rg(x,y-1);
+      const ae=EL[abv];
+      if(ae&&ae.type===T.MOVE&&y>1&&rg(x,y-2)===0&&rn(x,y-2)===0){
+        nxt[(y-2)*COLS+x]=abv;
+        nxt[(y-1)*COLS+x]=id;
+        nxt[y*COLS+x]=0;
+        return;
+      }
+    }
+    if(tryMv(x,y,x,y-1,id)) return;
+    const d=(Math.random()<0.5)?1:-1;
+    if(tryMv(x,y,x+d,y-1,id)) return;
+    if(tryMv(x,y,x-d,y-1,id)) return;
+    if(tryMv(x,y,x+d,y,id))   return;
+    if(tryMv(x,y,x-d,y,id))   return;
+    if(Math.random()<0.001){nxt[idx]=0;return;}
+    nxt[idx]=id; return;
+  }
+
+  // Fire: rise with wobble
+  if(el.type===T.FIRE){
+    const d=(Math.random()<0.5)?1:-1;
+    if(y>0&&tryMv(x,y,x+d,y-1,id)) return;
+    if(Math.random()<0.035){nxt[idx]=0;return;}
+    nxt[idx]=id; return;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ALCHEMY ENGINE
+// ═══════════════════════════════════════════════════════════
+function checkAlchemy(idA,idB,ax,ay,bx,by){
+  if(!EL[idA]||!EL[idB])return null;
+  const nA=EL[idA].name, nB=EL[idB].name;
+  const key=[nA,nB].sort().join('+');
+
+  if(key in recipes){
+    if(recipes[key]===false)return null;
+    put(ax,ay,recipes[key]); put(bx,by,0);
+    return recipes[key];
+  }
+
+  const recipe=ALCHEMY[key];
+  if(!recipe){recipes[key]=false;return null;}
+
+  // Find existing element with that name
+  let resId=EL.findIndex(e=>e&&e.name===recipe.name);
+  if(resId===-1){
+    // Create new element
+    resId=EL.length;
+    EL[resId]={...recipe,id:resId};
+    colorLUT[resId]=hexToU32(recipe.col||'#ffffff');
+    unlockEl(resId);
+  } else {
+    // Ensure it's unlocked even if pre-existing
+    unlockEl(resId);
+  }
+
+  recipes[key]=resId;
+  genLock=true;
+  setTimeout(()=>{genLock=false;persist();},30);
+
+  put(ax,ay,resId); put(bx,by,0);
+  return resId;
+}
+
+function unlockEl(id){
+  if(!unlocked.includes(id)){
+    unlocked.push(id);
+    rebuildID();
+    buildUI();
+    toast(`⚗ Discovered: ${EL[id].name}!`);
+    persist();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  EXPLOSION
+// ═══════════════════════════════════════════════════════════
+function explode(cx,cy,r){
+  const fId=ID['Fire']??3, sId=ID['Smoke']??4;
+  for(let y=cy-r;y<=cy+r;y++){
+    for(let x=cx-r;x<=cx+r;x++){
+      const d=Math.sqrt((x-cx)**2+(y-cy)**2);
+      if(d>r||x<0||x>=COLS||y<0||y>=ROWS)continue;
+      const existing=grid[y*COLS+x];
+      const ee=EL[existing];
+      if(!existing||(ee&&ee.type!==T.SOLID)||d>r*0.6){
+        const ratio=1-d/r;
+        put(x,y,Math.random()<ratio*0.9?fId:sId);
+      }
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDERING  (ImageData pixel buffer — no per-cell fillRect)
+// ═══════════════════════════════════════════════════════════
+const fireColors=[0xff1e3ef9,0xff0933f9,0xff0963f7,0xff0980ee,0xff00a3e8]; // ABGR variants
+function render(){
+  const W=canvas.width;
+  const emptyC=colorLUT[0];
+
+  for(let y=0;y<ROWS;y++){
+    const py0=y*CELL;
+    for(let x=0;x<COLS;x++){
+      const id=grid[y*COLS+x];
+      let c=id<colorLUT.length?colorLUT[id]:emptyC;
+
+      // Fire shimmer: slightly vary color each frame
+      if(id===(ID['Fire']??3)||id===(ID['Lava']??19)){
+        const shift=(Math.random()*30|0)-15;
+        const r=((c&0xff)+shift)&0xff;
+        const g=(((c>>8)&0xff)+shift)&0xff;
+        c=(c&0xff000000)|(c&0x00ff0000)|((g<<8))|r;
+      }
+      // Spark shimmer
+      if(id===(ID['Spark']??14)){
+        c=Math.random()<0.4?0xff88eafe:0xff00c8fe;
+      }
+
+      // Fill CELL×CELL block
+      const px0=x*CELL;
+      for(let py=py0;py<py0+CELL;py++){
+        const row=py*W;
+        for(let px=px0;px<px0+CELL;px++){
+          pixels[row+px]=c;
+        }
+      }
+    }
+  }
+  ctx.putImageData(imgData,0,0);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  UI
+// ═══════════════════════════════════════════════════════════
+function buildUI(){
+  rebuildID();
+  const srch=(document.getElementById('srch').value||'').toLowerCase();
+  const cont=document.getElementById('elGrid');
+  cont.innerHTML='';
+
+  // Group elements: basics and discovered
+  const basics=unlocked.filter(id=>id<BASE.length);
+  const disc=unlocked.filter(id=>id>=BASE.length);
+
+  if(basics.length){
+    const lbl=document.createElement('div');
+    lbl.className='lbl'; lbl.textContent='Elements';
+    cont.appendChild(lbl);
+    basics.forEach(id=>addElBtn(id,srch,cont));
+  }
+  if(disc.length){
+    const lbl=document.createElement('div');
+    lbl.className='lbl'; lbl.textContent='⚗ Discoveries';
+    cont.appendChild(lbl);
+    disc.forEach(id=>addElBtn(id,srch,cont));
+  }
+
+  document.getElementById('sDisc').textContent=disc.length+'/'+Object.keys(ALCHEMY).length;
+}
+
+function addElBtn(id,srch,cont){
+  const el=EL[id];
+  if(!el)return;
+  if(srch&&!el.name.toLowerCase().includes(srch))return;
+
+  const hex=el.col||'#333';
+  const r=parseInt(hex.slice(1,3),16)||0;
+  const g2=parseInt(hex.slice(3,5),16)||0;
+  const b2=parseInt(hex.slice(5,7),16)||0;
+  const lum=(0.299*r+0.587*g2+0.114*b2)/255;
+
+  const btn=document.createElement('button');
+  btn.className='el-btn'+(id===currentEl?' active':'');
+  btn.id='elb'+id;
+  btn.textContent=el.name;
+  btn.style.cssText=`background:${hex};color:${lum>0.5?'#000':'#fff'};
+    border-color:${lum>0.5?'rgba(0,0,0,.3)':'rgba(255,255,255,.2)'}`;
+  btn.onclick=()=>setEl(id);
+  cont.appendChild(btn);
+}
+
+function setEl(id){
+  currentEl=id;
+  document.querySelectorAll('.el-btn').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById('elb'+id);
+  if(btn) btn.classList.add('active');
+  updateGhost();
+}
+window.setEl=setEl;
+
+// ═══════════════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════════════
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  if(toastTid)clearTimeout(toastTid);
+  toastTid=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  GO!
+// ═══════════════════════════════════════════════════════════
+init();
+updateSimBtns(); // ensure Play is highlighted on first load
+</script>
+</body>
+</html>
