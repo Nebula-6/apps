@@ -1,18 +1,18 @@
 [
   {
     "name": "Aria",
-    "url": "/apps/aria-offline.html",
+    "url": "/apps/aria-offline.html"
   },
   {
     "name": "Sandbox",
-    "url": "/apps/sandbox.html",
+    "url": "/apps/sandbox.html"
   },
   {
     "name": "Typing Teach",
-    "url": "/apps/typing-teach.html",
+    "url": "/apps/typing-teach.html"
   },
   {
-    "name": "Quantum Sand"
+    "name": "Quantum Sand",
     "url": "/apps/quantum-sand.html"
   }
 ]
