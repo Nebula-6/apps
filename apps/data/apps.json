@@ -14,5 +14,9 @@
   {
     "name": "Quantum Sand",
     "url": "https://raw.githubusercontent.com/Nebula-6/apps/refs/heads/main/apps/quantum-sand.html"
+  },
+  {
+    "name": "Code Editor",
+    "url": "https://raw.githubusercontent.com/Nebula-6/apps/refs/heads/main/apps/code-edit.html"
   }
 ]
