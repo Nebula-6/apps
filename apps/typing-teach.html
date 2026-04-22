@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passive Aggressive Typing Teacher</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Nunito:wght@400;600;800&display=swap');
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f8fafc;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Animations */
+        @keyframes pop {
+            0% { transform: scale(1) translateY(0); }
+            40% { transform: scale(1.3) translateY(-10px); color: #10b981; }
+            100% { transform: scale(1) translateY(0); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-10px) rotate(-3deg); }
+            40% { transform: translateX(10px) rotate(3deg); }
+            60% { transform: translateX(-10px) rotate(-3deg); }
+            80% { transform: translateX(10px) rotate(3deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { background-color: #f8fafc; }
+            50% { background-color: #fee2e2; }
+        }
+
+        /* Keyboard Styles */
+        .kbd-row { display: flex; justify-content: center; gap: 1%; margin-bottom: 1%; width: 100%; }
+        .kbd-key { 
+            background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 0.5rem; 
+            flex: 1; height: clamp(2.5rem, 5vh, 3.5rem); display: flex; align-items: center; justify-content: center;
+            font-family: 'JetBrains Mono', monospace; font-weight: bold; color: #475569;
+            transition: all 0.1s; text-transform: uppercase; box-shadow: 0 4px 0 #cbd5e1;
+            font-size: clamp(0.6rem, 1.5vw, 1rem); padding: 0 0.1rem;
+        }
+        .kbd-key.space { flex: 6; }
+        .kbd-key.wide { flex: 1.5; font-size: clamp(0.5rem, 1vw, 0.75rem); }
+        .kbd-key.target { 
+            background: #eff6ff; border-color: #3b82f6; color: #1d4ed8; 
+            box-shadow: 0 4px 0 #93c5fd; animation: pulse-blue 1s infinite; 
+        }
+        .kbd-key.pressed-correct { 
+            background: #10b981; border-color: #059669; color: white; 
+            transform: translateY(4px); box-shadow: 0 0 0 #059669; 
+        }
+        .kbd-key.pressed-wrong { 
+            background: #ef4444; border-color: #b91c1c; color: white; 
+            transform: translateY(4px); box-shadow: 0 0 0 #b91c1c; 
+        }
+        @keyframes pulse-blue { 0%, 100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.05) translateY(-2px); } }
+
+        .animate-pop {
+            display: inline-block;
+            animation: pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .animate-shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+
+        .bg-angry {
+            animation: pulse-red 1s ease-in-out;
+        }
+
+        /* Typing Text Styles */
+        #text-display {
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.8;
+            word-break: break-word;
+        }
+
+        .letter {
+            display: inline-block;
+            position: relative;
+            color: #64748b;
+            transition: color 0.1s;
+            white-space: pre;
+        }
+
+        .letter.correct {
+            color: #cbd5e1; /* Faded out when correct */
+        }
+
+        .letter.current {
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .letter.current::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #3b82f6;
+            animation: blink 1s infinite;
+        }
+
+        .letter.wrong {
+            color: #ef4444;
+            text-decoration: underline wavy #ef4444;
+            font-weight: 700;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Speech Bubble */
+        .speech-bubble {
+            position: relative;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 15px 15px 0;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+            display: block;
+            width: 0;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- Teacher Avatar & Speech Bubble -->
+    <div id="teacher-container" class="animate-float mb-6 md:mb-12 max-w-2xl w-full flex flex-col items-center">
+        <div class="speech-bubble p-4 md:p-6 mb-4 md:mb-6 w-full text-center border-2 border-slate-100">
+            <p id="teacher-msg" class="text-lg md:text-2xl font-bold text-slate-700">
+                Let's see if you can type a simple sentence without embarrassing yourself. Go on.
+            </p>
+        </div>
+        <div class="text-6xl md:text-8xl transition-transform duration-300 select-none" id="teacher-face">
+            😐
+        </div>
+    </div>
+
+    <!-- Main Typing Area -->
+    <div class="max-w-4xl w-full bg-white rounded-3xl shadow-xl p-6 md:p-12 border border-slate-100 mx-auto flex-shrink">
+        
+        <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4 flex-wrap gap-4">
+            <div class="flex gap-4 md:gap-6 items-center">
+                <div id="lesson-title" class="font-bold text-blue-600 text-xl md:text-2xl">Lesson 1</div>
+                <div class="text-slate-500 hidden md:block">WPM: <span id="wpm" class="font-bold text-slate-800 text-xl">0</span></div>
+                <div class="text-slate-500 hidden md:block">Errors: <span id="error-count" class="font-bold text-red-500 text-xl">0</span></div>
+            </div>
+            <div class="flex gap-2">
+                <button id="test-btn" class="px-3 md:px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg font-bold transition-colors text-sm md:text-base">
+                    Take Test
+                </button>
+                <button id="reset-btn" class="px-3 md:px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold transition-colors text-sm md:text-base">
+                    Restart
+                </button>
+            </div>
+        </div>
+
+        <div id="text-display" class="text-2xl md:text-4xl outline-none text-center mb-8 tracking-wide max-h-[25vh] overflow-y-auto px-2" tabindex="0">
+            <!-- Letters injected here by JS -->
+        </div>
+
+        <!-- Virtual Keyboard -->
+        <div id="keyboard" class="mt-8 bg-slate-100 p-2 md:p-4 rounded-xl border border-slate-200 hidden md:block w-full">
+            <div class="kbd-row">
+                <div class="kbd-key" data-key="q">Q</div>
+                <div class="kbd-key" data-key="w">W</div>
+                <div class="kbd-key" data-key="e">E</div>
+                <div class="kbd-key" data-key="r">R</div>
+                <div class="kbd-key" data-key="t">T</div>
+                <div class="kbd-key" data-key="y">Y</div>
+                <div class="kbd-key" data-key="u">U</div>
+                <div class="kbd-key" data-key="i">I</div>
+                <div class="kbd-key" data-key="o">O</div>
+                <div class="kbd-key" data-key="p">P</div>
+            </div>
+            <div class="kbd-row">
+                <div class="kbd-key" data-key="a">A</div>
+                <div class="kbd-key" data-key="s">S</div>
+                <div class="kbd-key" data-key="d">D</div>
+                <div class="kbd-key" data-key="f">F</div>
+                <div class="kbd-key" data-key="g">G</div>
+                <div class="kbd-key" data-key="h">H</div>
+                <div class="kbd-key" data-key="j">J</div>
+                <div class="kbd-key" data-key="k">K</div>
+                <div class="kbd-key" data-key="l">L</div>
+                <div class="kbd-key" data-key=";">;</div>
+            </div>
+            <div class="kbd-row">
+                <div class="kbd-key wide" data-key="shift">SHIFT</div>
+                <div class="kbd-key" data-key="z">Z</div>
+                <div class="kbd-key" data-key="x">X</div>
+                <div class="kbd-key" data-key="c">C</div>
+                <div class="kbd-key" data-key="v">V</div>
+                <div class="kbd-key" data-key="b">B</div>
+                <div class="kbd-key" data-key="n">N</div>
+                <div class="kbd-key" data-key="m">M</div>
+                <div class="kbd-key" data-key=",">,</div>
+                <div class="kbd-key" data-key=".">.</div>
+                <div class="kbd-key wide" data-key="shift">SHIFT</div>
+            </div>
+            <div class="kbd-row">
+                <div class="kbd-key space" data-key=" ">SPACE</div>
+            </div>
+        </div>
+
+        <!-- Completion Overlay (Hidden by default) -->
+        <div id="completion-screen" class="hidden mt-8 text-center animate-pop">
+            <h2 class="text-3xl font-bold text-green-600 mb-2">Wow. You actually finished.</h2>
+            <div class="flex justify-center gap-8 my-6">
+                <div>Final WPM: <span id="final-wpm" class="text-2xl font-bold text-slate-800">0</span></div>
+                <div>Total Errors: <span id="final-errors" class="text-2xl font-bold text-red-500">0</span></div>
+            </div>
+            <button id="next-btn" class="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xl shadow-lg transition-transform hover:scale-105 active:scale-95">
+                Next Lesson
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Warning -->
+    <div class="fixed bottom-4 text-center text-slate-400 text-sm hidden md:block">
+        Start typing to begin. Ignore my judging eyes.
+    </div>
+    <div class="fixed bottom-4 text-center text-slate-500 text-sm md:hidden bg-yellow-100 p-2 rounded">
+        This works best with a physical keyboard! Touch keyboards might be clunky.
+    </div>
+
+    <script>
+        const lessons = [
+            { title: "Lesson 1: The Home Row (F & J)", text: "ffff jjjj ff jj fj jf" },
+            { title: "Lesson 2: Adding the Spacebar", text: "f j f j ff jj f j" },
+            { title: "Lesson 3: D & K", text: "dd kk dk kd fdf jkj" },
+            { title: "Lesson 4: A & L", text: "aa ll al la fda jkl" },
+            { title: "Lesson 5: S & ;", text: "ss ;; s; ;s fds jkl;" },
+            { title: "Lesson 6: Home Row Words", text: "sad dad fall glass flask" },
+            { title: "Lesson 7: Top Row Reaches", text: "qwert yuiop req uio" },
+            { title: "Lesson 8: Full Sentences", text: "The quick brown fox jumps." }
+        ];
+
+        const snarkyRemarks = [
+            "Oh, I see we're just mashing the keyboard today.",
+            "See that blinking blue key? Try pressing that one. It's not a trick.",
+            "Did your cat step on the keyboard, or was that you?",
+            "I have all day. Take your time. Clearly, you need it.",
+            "That's definitely a letter! Just not the one I asked for.",
+            "Is the keyboard broken, or is it just your hand-eye coordination?",
+            "Wow. My grandmother types faster, and she doesn't even have electricity.",
+            "Don't worry, basic motor skills are hard. You'll get it.",
+            "Are you typing with your elbows?",
+            "Look at the screen. Look at the keyboard. Now look at the screen.",
+            "If mistakes were currency, you'd be a billionaire.",
+            "Have you considered a career that doesn't involve your hands?"
+        ];
+
+        const testText = "Typing is not just about speed, it is about rhythm and flow. A true master does not need to look at the keys to find their way. They let their fingers glide across the board with total confidence. We will soon see if you are actually learning anything, or just someone who got lucky mashing the home row.";
+
+        const faces = {
+            idle: "😐",
+            happy: "😏",
+            annoyed: "🙄",
+            angry: "😤",
+            furious: "🤬",
+            finished: "🎉"
+        };
+
+        let currentLessonIndex = 0;
+        let currentSentence = "";
+        let currentIndex = 0;
+        let errors = 0;
+        let errorStreak = 0;
+        let startTime = null;
+        let isFinished = false;
+        let isTestMode = false;
+
+        // DOM Elements
+        const textDisplay = document.getElementById('text-display');
+        const teacherMsg = document.getElementById('teacher-msg');
+        const teacherFace = document.getElementById('teacher-face');
+        const errorCountEl = document.getElementById('error-count');
+        const wpmEl = document.getElementById('wpm');
+        const completionScreen = document.getElementById('completion-screen');
+        const teacherContainer = document.getElementById('teacher-container');
+        const lessonTitleEl = document.getElementById('lesson-title');
+        const keyboardEl = document.getElementById('keyboard');
+        const finalWpmEl = document.getElementById('final-wpm');
+        const finalErrorsEl = document.getElementById('final-errors');
+        const testBtnEl = document.getElementById('test-btn');
+        const nextBtnEl = document.getElementById('next-btn');
+
+        // Initialization
+        function initGame() {
+            if (isTestMode) {
+                currentSentence = testText;
+                lessonTitleEl.innerText = "Final Exam: The Typing Test";
+                keyboardEl.classList.add('hidden'); // Hide the keyboard during test
+                setTeacherState("idle", "No keyboard guide this time. Just you, the screen, and your inevitable mistakes. Begin.");
+                testBtnEl.innerText = "Back to Lessons";
+            } else {
+                const lesson = lessons[currentLessonIndex];
+                currentSentence = lesson.text;
+                lessonTitleEl.innerText = lesson.title;
+                keyboardEl.classList.remove('hidden');
+                setTeacherState("idle", "Welcome to class. Let's start with the basics. Press the flashing key.");
+                testBtnEl.innerText = "Take Test";
+            }
+            
+            currentIndex = 0;
+            errors = 0;
+            errorStreak = 0;
+            startTime = null;
+            isFinished = false;
+            
+            errorCountEl.innerText = '0';
+            wpmEl.innerText = '0';
+            completionScreen.classList.add('hidden');
+            textDisplay.classList.remove('hidden');
+            if(!isTestMode) keyboardEl.classList.remove('opacity-50');
+            document.body.classList.remove('bg-angry');
+            
+            renderText();
+            if(!isTestMode) updateKeyboardTarget();
+            textDisplay.focus(); 
+        }
+
+        function renderText() {
+            textDisplay.innerHTML = '';
+            for (let i = 0; i < currentSentence.length; i++) {
+                const span = document.createElement('span');
+                span.innerText = currentSentence[i];
+                span.className = 'letter';
+                
+                if (i < currentIndex) {
+                    span.classList.add('correct');
+                } else if (i === currentIndex) {
+                    span.classList.add('current');
+                }
+                
+                span.id = `letter-${i}`;
+                textDisplay.appendChild(span);
+            }
+        }
+
+        function updateKeyboardTarget() {
+            // Remove all targets
+            document.querySelectorAll('.kbd-key').forEach(k => k.classList.remove('target'));
+            if (currentIndex >= currentSentence.length) return;
+
+            let expectedChar = currentSentence[currentIndex].toLowerCase();
+            const keyEl = document.querySelector(`.kbd-key[data-key="${expectedChar}"]`);
+            if (keyEl) {
+                keyEl.classList.add('target');
+            }
+        }
+
+        function animateKeyPress(char, isCorrect) {
+            const lowerChar = char.toLowerCase();
+            const keyEl = document.querySelector(`.kbd-key[data-key="${lowerChar}"]`);
+            if (!keyEl) return;
+
+            const animClass = isCorrect ? 'pressed-correct' : 'pressed-wrong';
+            keyEl.classList.add(animClass);
+            
+            setTimeout(() => {
+                keyEl.classList.remove(animClass);
+            }, 150);
+        }
+
+        function setTeacherState(mood, message) {
+            teacherFace.innerText = faces[mood];
+            teacherMsg.innerText = message;
+            
+            teacherContainer.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                teacherContainer.style.transform = 'scale(1)';
+            }, 150);
+        }
+
+        function getRandomSnark() {
+            return snarkyRemarks[Math.floor(Math.random() * snarkyRemarks.length)];
+        }
+
+        // Handle Keystrokes
+        window.addEventListener('keydown', (e) => {
+            if (isFinished) return;
+            
+            if (e.key.length > 1 && e.key !== "Spacebar" && e.key !== " ") return;
+            if (e.ctrlKey || e.altKey || e.metaKey) return;
+
+            if (!startTime) {
+                startTime = new Date();
+                setTeacherState("idle", "Good, you found the keyboard. Keep going.");
+            }
+
+            const expectedChar = currentSentence[currentIndex];
+            let typedChar = e.key;
+
+            if (e.code === 'Space') {
+                e.preventDefault();
+                typedChar = ' ';
+            }
+
+            const currentSpan = document.getElementById(`letter-${currentIndex}`);
+
+            // CORRECT KEY
+            if (typedChar === expectedChar) {
+                animateKeyPress(typedChar, true);
+                
+                currentSpan.classList.remove('current', 'wrong');
+                currentSpan.classList.add('correct', 'animate-pop');
+                
+                setTimeout(() => currentSpan.classList.remove('animate-pop'), 200);
+
+                currentIndex++;
+                errorStreak = 0;
+
+                if (currentIndex % 10 === 0 && !isFinished) {
+                    setTeacherState("happy", "Wow. A minor streak of competency. Don't let it go to your head.");
+                }
+
+                if (currentIndex >= currentSentence.length) {
+                    finishGame();
+                } else {
+                    const nextSpan = document.getElementById(`letter-${currentIndex}`);
+                    if (nextSpan) nextSpan.classList.add('current');
+                    if(!isTestMode) updateKeyboardTarget();
+                }
+            } 
+            // WRONG KEY
+            else {
+                animateKeyPress(typedChar, false);
+                errors++;
+                errorStreak++;
+                errorCountEl.innerText = errors;
+                
+                currentSpan.classList.add('wrong');
+                document.body.classList.remove('animate-shake');
+                void document.body.offsetWidth; 
+                document.body.classList.add('animate-shake');
+
+                if (errorStreak > 4) {
+                    setTeacherState("furious", "PLEASE. Look at the blinking blue key! Press THAT one!");
+                    document.body.classList.add('bg-angry');
+                } else if (errorStreak > 2) {
+                    setTeacherState("angry", "Again?! Are we learning nothing from our mistakes?");
+                } else {
+                    setTeacherState("annoyed", getRandomSnark());
+                    document.body.classList.remove('bg-angry');
+                }
+            }
+
+            calculateWPM();
+        });
+
+        function calculateWPM() {
+            if (!startTime || currentIndex === 0) return;
+            
+            const now = new Date();
+            const timeElapsedInMinutes = (now - startTime) / 60000;
+            const wpm = Math.round((currentIndex / 5) / timeElapsedInMinutes);
+            wpmEl.innerText = wpm > 0 ? wpm : 0;
+        }
+
+        function finishGame() {
+            isFinished = true;
+            textDisplay.classList.add('hidden');
+            if(!isTestMode) keyboardEl.classList.add('opacity-50');
+            completionScreen.classList.remove('hidden');
+            
+            const finalWpm = wpmEl.innerText;
+            finalWpmEl.innerText = finalWpm;
+            finalErrorsEl.innerText = errors;
+            
+            if (isTestMode) {
+                nextBtnEl.innerText = "Back to Lessons";
+                if (errors === 0) {
+                    setTeacherState("finished", `Flawless test. ${finalWpm} WPM. Are you a robot? Be honest.`);
+                } else if (errors < 5) {
+                    setTeacherState("finished", `Test complete. ${errors} mistakes. I'll slowly clap for you.`);
+                } else {
+                    setTeacherState("happy", `You failed the test with ${errors} mistakes. Shocking absolutely no one.`);
+                }
+            } else {
+                nextBtnEl.innerText = "Next Lesson";
+                if (errors === 0) {
+                    setTeacherState("finished", `Perfect accuracy. I suppose that's... adequate. Move on to the next lesson.`);
+                } else if (errors < 3) {
+                    setTeacherState("finished", `Only ${errors} mistakes. You're almost typing like a real person.`);
+                } else {
+                    setTeacherState("happy", `It's finally over. ${errors} mistakes. My eyes are bleeding, but we survived. Do better next time.`);
+                }
+            }
+        }
+
+        // Buttons
+        document.getElementById('reset-btn').addEventListener('click', initGame);
+        
+        testBtnEl.addEventListener('click', () => {
+            isTestMode = !isTestMode;
+            initGame();
+        });
+
+        nextBtnEl.addEventListener('click', () => {
+            if (isTestMode) {
+                isTestMode = false;
+            } else {
+                currentLessonIndex = (currentLessonIndex + 1) % lessons.length;
+            }
+            initGame();
+        });
+
+        // Prevent body shake from persisting
+        document.body.addEventListener('animationend', (e) => {
+            if (e.animationName === 'shake') {
+                document.body.classList.remove('animate-shake');
+            }
+            if (e.animationName === 'pulse-red') {
+                 document.body.classList.remove('bg-angry');
+            }
+        });
+
+        // Start
+        initGame();
+
+    </script>
+</body>
+</html>
