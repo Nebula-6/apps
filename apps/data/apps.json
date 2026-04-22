@@ -5,14 +5,14 @@
   },
   {
     "name": "Sandbox",
-    "url": "/apps/sandbox.html"
+    "url": "https://github.com/Nebula-6/apps/raw/refs/heads/main/apps/sandbox.html"
   },
   {
     "name": "Typing Teach",
-    "url": "/apps/typing-teach.html"
+    "url": "https://github.com/Nebula-6/apps/raw/refs/heads/main/apps/typing-teach.html"
   },
   {
     "name": "Quantum Sand",
-    "url": "/apps/quantum-sand.html"
+    "url": "https://github.com/Nebula-6/apps/raw/refs/heads/main/apps/quantum-sand.html"
   }
 ]
