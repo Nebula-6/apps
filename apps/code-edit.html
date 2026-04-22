@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pro HTML Editor</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/darcula.min.css">
+
+<style>
+  :root {
+    --bg-dark: #121212;
+    --bg-toolbar: #1e1e1e;
+    --accent-blue: #0A84FF;
+    --accent-green: #30D158;
+    --border-soft: #333;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--bg-dark);
+    color: #ffffff;
+    overflow: hidden;
+  }
+  
+  .toolbar {
+    padding: 10px 20px;
+    background-color: var(--bg-toolbar);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    border-bottom: 2px solid var(--border-soft);
+    z-index: 10;
+  }
+  
+  button, .toolbar-select {
+    padding: 7px 14px;
+    cursor: pointer;
+    background-color: #2d2d2d;
+    color: white;
+    border: 1px solid #444;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    outline: none;
+  }
+  
+  button:hover, .toolbar-select:hover { background-color: #3d3d3d; }
+  .btn-run { color: var(--accent-blue); border-color: rgba(10, 132, 255, 0.4); background-color: rgba(10, 132, 255, 0.1); }
+  .btn-run:hover { background-color: rgba(10, 132, 255, 0.2); }
+  .btn-download { color: var(--accent-green); border-color: rgba(48, 209, 88, 0.4); background-color: rgba(48, 209, 88, 0.1); }
+  .btn-download:hover { background-color: rgba(48, 209, 88, 0.2); }
+  .btn-reset { margin-left: auto; background: transparent; border: none; color: #ff453a; font-size: 12px; opacity: 0.8; padding: 4px 8px;}
+  .btn-reset:hover { background: rgba(255,69,58,0.1); opacity: 1;}
+
+  .toolbar-select {
+    appearance: none;
+    padding-right: 30px;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px top 50%;
+    background-size: 10px auto;
+  }
+
+  .status-text {
+    font-size: 13px;
+    color: #888;
+    margin-left: 10px;
+  }
+
+  .container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+  
+  .editor-pane, .output-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .editor-pane {
+    border-right: 2px solid var(--border-soft);
+    position: relative;
+    display: flex;
+  }
+
+  #drag-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(30, 30, 30, 0.9);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    color: var(--accent-blue);
+  }
+  #drag-overlay.active { display: flex; }
+  #drag-overlay h2 { font-size: 32px; margin: 0; }
+  #drag-overlay p { color: #aaa; }
+
+  .CodeMirror {
+    flex: 1;
+    height: 100% !important;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  
+  #output-wrapper {
+    flex: 1;
+    display: flex;
+    background-color: #ffffff; 
+  }
+  iframe {
+    flex: 1; width: 100%; height: 100%; border: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button class="btn-run" onclick="runCode()">▶ Run</button>
+  
+  <select id="template-select" class="toolbar-select" onchange="applyTemplate()">
+    <option value="" disabled selected>✨ New Project...</option>
+    <option value="html">📄 HTML5 Canvas</option>
+    <option value="react">⚛️ React (JSX)</option>
+    <option value="ts">📘 TypeScript</option>
+  </select>
+
+  <button onclick="toggleFullScreen()">⛶ Preview</button>
+  <button class="btn-download" onclick="downloadCode()">💾 Download</button>
+  
+  <button class="btn-reset" onclick="hardReset()">🔄 Reset</button>
+  <span class="status-text" id="status-indicator">Ready</span>
+</div>
+
+<div class="container">
+  <div class="editor-pane" id="editor-pane">
+    <textarea id="html-code" style="display:none;"></textarea>
+  </div>
+  
+  <div class="output-pane">
+    <div id="output-wrapper">
+      <iframe id="output-frame"></iframe>
+    </div>
+  </div>
+</div>
+
+<div id="drag-overlay">
+  <h2>📁 Drop File Here</h2>
+  <p>Release to load code into editor</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/jsx/jsx.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
+
+<script>
+  const statusIndicator = document.getElementById('status-indicator');
+  const dragOverlay = document.getElementById('drag-overlay');
+  
+  const templates = {
+    html: "<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { margin: 0; display: flex; flex-direction: column; align-items: center; background: #1e1e1e; color: white; font-family: sans-serif; }\n    canvas { background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: crosshair; margin-top: 20px; }\n    h2 { margin: 20px 0 5px; color: #0A84FF; }\n    p { margin: 0 0 15px; color: #aaa; font-size: 14px; }\n  </style>\n</head>\n<body>\n  <h2>HTML5 Canvas API</h2>\n  <p>Click and drag to draw!</p>\n  <canvas id=\"drawCanvas\" width=\"400\" height=\"300\"></canvas>\n  <script>\n    const canvas = document.getElementById('drawCanvas');\n    const ctx = canvas.getContext('2d');\n    let isDrawing = false;\n    ctx.lineWidth = 4;\n    ctx.lineCap = 'round';\n    ctx.strokeStyle = '#0A84FF';\n    canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });\n    canvas.addEventListener('mousemove', (e) => { if (isDrawing) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } });\n    canvas.addEventListener('mouseup', () => isDrawing = false);\n    canvas.addEventListener('mouseout', () => isDrawing = false);\n  \x3C/script>\n</body>\n</html>",
+    
+    react: "<!DOCTYPE html>\n<html>\n<head>\n  \n  <script src=\"https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js\">\x3C/script>\n  <script src=\"https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js\">\x3C/script>\n  <script src=\"https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js\">\x3C/script>\n  <style>\n    body { font-family: sans-serif; display: flex; justify-content: center; margin-top: 50px; background: #282c34; color: white; }\n    button { padding: 10px 20px; font-size: 16px; cursor: pointer; border-radius: 5px; border: none; background: #61dafb; font-weight: bold; }\n  </style>\n</head>\n<body>\n  <div id=\"root\"></div>\n  \n  \n  <script type=\"text/babel\" data-presets=\"react,env\">\n    function App() {\n      const [count, setCount] = React.useState(0);\n      return (\n        <div style={{ textAlign: 'center' }}>\n          <h1>React is Live! ⚛️</h1>\n          <button onClick={() => setCount(count + 1)}>\n            Clicked {count} times\n          </button>\n        </div>\n      );\n    }\n    const root = ReactDOM.createRoot(document.getElementById('root'));\n    root.render(<App />);\n  \x3C/script>\n</body>\n</html>",
+
+    ts: "<!DOCTYPE html>\n<html>\n<head>\n  <script src=\"https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js\">\x3C/script>\n  <style>\n    body { font-family: sans-serif; text-align: center; margin-top: 50px; background: #3178c6; color: white; }\n    #output { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; display: inline-block; font-size: 24px; font-weight: bold;}\n  </style>\n</head>\n<body>\n  \n  <div id=\"output\">Compiling TypeScript...</div>\n  \n  \n  <script type=\"text/babel\" data-presets=\"typescript,env\">\n    interface Developer {\n      name: string;\n      status: string;\n    }\n    \n    const dev: Developer = {\n      name: \"User\",\n      status: \"TypeScript is Live! 📘\"\n    };\n    \n    const out = document.getElementById('output');\n    if (out) {\n      out.innerText = dev.status;\n    }\n  \x3C/script>\n</body>\n</html>"
+  };
+
+  const editor = CodeMirror.fromTextArea(document.getElementById("html-code"), {
+    mode: "htmlmixed",
+    theme: "darcula",
+    lineNumbers: true,
+    lineWrapping: true,
+    tabSize: 2
+  });
+
+  let runTimeout;
+
+  function loadCode() {
+    if (window.IS_PREVIEW_IFRAME) return;
+
+    const savedCode = localStorage.getItem('myProEditorCode');
+    if (savedCode) {
+      editor.setValue(savedCode);
+      statusIndicator.innerText = "Loaded from memory";
+    } else {
+      editor.setValue(templates.html);
+    }
+    // Note: runCode() remains removed here to protect WebGL contexts from double-initialization crashes.
+  }
+
+  function applyTemplate() {
+    const select = document.getElementById('template-select');
+    const mode = select.value;
+    
+    if(confirm("Load the " + mode.toUpperCase() + " boilerplate? This will overwrite your current code.")) {
+      editor.setValue(templates[mode]);
+    }
+    select.value = ""; 
+  }
+
+  editor.on("change", function() {
+    if (window.IS_PREVIEW_IFRAME) return;
+
+    localStorage.setItem('myProEditorCode', editor.getValue());
+    statusIndicator.innerText = "✓ Autosaved";
+    statusIndicator.style.color = "var(--accent-green)";
+    setTimeout(() => { statusIndicator.style.color = "#888"; }, 1500);
+
+    clearTimeout(runTimeout);
+    runTimeout = setTimeout(runCode, 800);
+  });
+
+  function ensureDoctype(code) {
+    if (!/^\s*<!DOCTYPE\s+html>/i.test(code)) {
+      return "<!DOCTYPE html>\n" + code;
+    }
+    return code;
+  }
+
+  function runCode() {
+    if (window.IS_PREVIEW_IFRAME) return;
+
+    let htmlCode = editor.getValue();
+    htmlCode = ensureDoctype(htmlCode);
+    
+    const inceptionGuard = "\x3Cscript>window.IS_PREVIEW_IFRAME=true;\x3C\/script>";
+
+    if (/<head>/i.test(htmlCode)) {
+      htmlCode = htmlCode.replace(/<head>/i, '<head>\n  ' + inceptionGuard);
+    } else {
+      htmlCode = htmlCode.replace(/(<!DOCTYPE\s+html>)/i, '$1\n' + inceptionGuard);
+    }
+
+    const iframe = document.getElementById('output-frame');
+    const iframeDoc = iframe.contentWindow.document;
+    
+    iframeDoc.open();
+    iframeDoc.write(htmlCode);
+    iframeDoc.close();
+  }
+
+  function downloadCode() {
+    if (window.IS_PREVIEW_IFRAME) return;
+
+    let fileName = prompt("Enter a name for your file:", "my_project.html");
+    if (fileName === null) return; 
+    if (fileName.trim() === "") fileName = "my_project.html";
+    if (!fileName.endsWith(".html") && !fileName.endsWith(".htm")) fileName += ".html";
+
+    let htmlCode = editor.getValue();
+    htmlCode = ensureDoctype(htmlCode);
+
+    const blob = new Blob([htmlCode], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  document.addEventListener('dragover', (e) => { e.preventDefault(); dragOverlay.classList.add('active'); });
+  document.addEventListener('dragleave', (e) => { e.preventDefault(); if (e.target === dragOverlay) dragOverlay.classList.remove('active'); });
+  document.addEventListener('drop', (e) => {
+    e.preventDefault(); dragOverlay.classList.remove('active');
+    if (e.dataTransfer.files.length > 0) {
+      const reader = new FileReader();
+      reader.onload = function(event) { editor.setValue(event.target.result); };
+      reader.readAsText(e.dataTransfer.files[0]);
+    }
+  });
+
+  function toggleFullScreen() {
+    const outputWrapper = document.getElementById('output-wrapper');
+    if (!document.fullscreenElement) {
+      if (outputWrapper.requestFullscreen) outputWrapper.requestFullscreen();
+      else if (outputWrapper.webkitRequestFullscreen) outputWrapper.webkitRequestFullscreen();
+    } else {
+      if (document.exitFullscreen) document.exitFullscreen();
+    }
+  }
+
+  function hardReset() {
+    if(confirm("Erase all code and reset?")) {
+      localStorage.removeItem('myProEditorCode');
+      location.reload();
+    }
+  }
+
+  window.addEventListener('beforeunload', function (e) { e.preventDefault(); e.returnValue = ''; });
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); runCode(); }
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); downloadCode(); }
+  });
+
+  window.onload = loadCode;
+</script>
+
+</body>
+</html>
