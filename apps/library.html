@@ -650,7 +650,7 @@
   function showUpdateBanner(version,url){_updateUrl=url||"";$("updateVersionLabel").textContent=version;$("updateBanner").classList.remove("hidden");}
   $("updateBannerClose").addEventListener("click",()=>$("updateBanner").classList.add("hidden"));
   $("updateNowBtn").addEventListener("click",()=>{if(_updateUrl)launchWrapper(_updateUrl);});
-  $("updateDlBtn").addEventListener("click",()=>{if(!_updateUrl)return;const a=document.createElement("a");a.href=_updateUrl;a.download="app-library.html";a.click();});
+  $("updateDlBtn").addEventListener("click",()=>{if(!_updateUrl)return;downloadApp(_updateUrl,"app-library",$("updateDlBtn"));});
   $("apiErrorClose").addEventListener("click",()=>setErr(""));
   $("whatsNewClose").addEventListener("click",()=>{$("whatsNewBanner").classList.add("hidden");markSeen();});
 
