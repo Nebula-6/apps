@@ -1,27 +1,33 @@
-[
-  {
-    "name": "Aria",
-    "url": "https://raw.githubusercontent.com/Nebula-6/apps/refs/heads/main/apps/aira-offline.html",
-    "desc": "A local AI model that runs in your browser"
+{
+  "library": {
+    "version": "V2",
+    "url": "https://raw.githubusercontent.com/Nebula-6/apps/refs/heads/main/apps/library.html"
   },
-  {
-    "name": "Sandbox",
-    "url": "https://raw.githubusercontent.com/Nebula-6/apps/refs/heads/main/apps/sandbox.html",
-    "desc": "Simple physics sandbox game"
-  },
-  {
-    "name": "Typing Teach",
-    "url": "https://raw.githubusercontent.com/Nebula-6/apps/refs/heads/main/apps/typing-teach.html",
-    "desc": "A passive aggressive keyboarding teacher"
-  },
-  {
-    "name": "Quantum Sand",
-    "url": "https://raw.githubusercontent.com/Nebula-6/apps/refs/heads/main/apps/quantum-sand.html",
-    "desc": "A physics sandbox that’s literally sand"
-  },
-  {
-    "name": "Code Editor",
-    "url": "https://raw.githubusercontent.com/Nebula-6/apps/refs/heads/main/apps/code-edit.html",
-    "desc": "A HTML, React, and TypeScript editor"
-  }
-]
+  "apps": [
+    {
+      "name": "Aria",
+      "url": "https://raw.githubusercontent.com/Nebula-6/apps/refs/heads/main/apps/aira-offline.html",
+      "desc": "A local AI model that runs in your browser"
+    },
+    {
+      "name": "Sandbox",
+      "url": "https://raw.githubusercontent.com/Nebula-6/apps/refs/heads/main/apps/sandbox.html",
+      "desc": "Simple physics sandbox game"
+    },
+    {
+      "name": "Typing Teach",
+      "url": "https://raw.githubusercontent.com/Nebula-6/apps/refs/heads/main/apps/typing-teach.html",
+      "desc": "A passive aggressive keyboarding teacher"
+    },
+    {
+      "name": "Quantum Sand",
+      "url": "https://raw.githubusercontent.com/Nebula-6/apps/refs/heads/main/apps/quantum-sand.html",
+      "desc": "A physics sandbox that's literally sand"
+    },
+    {
+      "name": "Code Editor",
+      "url": "https://raw.githubusercontent.com/Nebula-6/apps/refs/heads/main/apps/code-edit.html",
+      "desc": "A HTML, React, and TypeScript editor"
+    }
+  ]
+}
