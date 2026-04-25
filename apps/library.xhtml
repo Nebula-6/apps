@@ -1,12 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html>
-<html lang="en" data-theme="cosmos">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" data-theme="cosmos">
 <head>
-  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>App Library</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Epilogue:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
-  <style>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&amp;family=Epilogue:ital,wght@0,300;0,400;0,500;0,600;1,400&amp;display=swap" rel="stylesheet" />
+  <style type="text/css">/*<![CDATA[*/
     :root{--bg:#090f1e;--grad1:#28357f;--grad2:#7634a0;--grad3:#0f7ea4;--panel:rgba(255,255,255,0.07);--panel-hover:rgba(255,255,255,0.11);--panel-solid:#0d1528;--panel-border:rgba(255,255,255,0.14);--text:#e7ecff;--muted:#7a85b0;--accent:#68d4ff;--accent-glow:rgba(104,212,255,0.18);--accent-rgb:104,212,255;--danger:rgba(138,25,48,0.4);--danger-border:rgba(255,100,100,0.3);--danger-text:#ffb3b3;--radius:16px;--radius-sm:10px;--shadow:0 16px 48px rgba(0,0,0,0.45);--shadow-sm:0 4px 18px rgba(0,0,0,0.28);--fs-base:15px;--card-pad:18px;}
     [data-theme="midnight"]{--bg:#04040a;--grad1:#1a0a40;--grad2:#2d1060;--grad3:#0a0a30;--panel:rgba(255,255,255,0.05);--panel-hover:rgba(255,255,255,0.09);--panel-solid:#09080f;--panel-border:rgba(180,140,255,0.16);--text:#e8e8ff;--muted:#6868a8;--accent:#c084fc;--accent-glow:rgba(192,132,252,0.18);--accent-rgb:192,132,252;}
     [data-theme="forest"]{--bg:#061410;--grad1:#0c2e1a;--grad2:#082814;--grad3:#0a3020;--panel:rgba(150,255,180,0.05);--panel-hover:rgba(150,255,180,0.09);--panel-solid:#081a10;--panel-border:rgba(100,220,140,0.18);--text:#d8f0e0;--muted:#5c8870;--accent:#4ade80;--accent-glow:rgba(74,222,128,0.18);--accent-rgb:74,222,128;--danger:rgba(200,50,50,0.25);--danger-border:rgba(255,100,100,0.3);--danger-text:#ffb3b3;}
@@ -119,7 +120,7 @@
     .icon-card-btn.downloaded{border-color:#4ade80;color:#4ade80;}
     .danger-btn{border:1px solid var(--danger-border);border-radius:10px;padding:8px 12px;color:var(--danger-text);background:var(--danger);cursor:pointer;font-family:'Epilogue',sans-serif;font-size:0.84em;transition:filter 0.15s;}
     .danger-btn:hover{filter:brightness(1.25);}
-    .hidden{display:none!important;}
+    .hidden{display:none !important;}
     /* SKELETON */
     .skeleton{border:1px solid var(--panel-border);border-radius:var(--radius);padding:var(--card-pad);display:flex;flex-direction:column;gap:10px;animation:skPulse 1.5s ease-in-out infinite;}
     @keyframes skPulse{0%,100%{opacity:0.5}50%{opacity:1}}
@@ -269,7 +270,7 @@
     .toast.visible{opacity:1;transform:translateY(0) scale(1);}
     .toast-success{border-color:#4ade80;}.toast-error{border-color:#f87171;}.toast-info{border-color:var(--accent);}
     @keyframes spin{to{transform:rotate(360deg);}}
-  </style>
+  /*]]>*/</style>
 </head>
 <body data-theme="cosmos" data-showdesc="true">
   <canvas id="bgCanvas"></canvas>
@@ -280,7 +281,7 @@
     <div class="palette-box">
       <div class="palette-input-wrap">
         <span class="palette-search-icon">⌕</span>
-        <input id="paletteInput" class="palette-input" placeholder="Search apps… (↵ open, ⇧↵ new tab)" autocomplete="off"/>
+        <input id="paletteInput" class="palette-input" placeholder="Search apps… (↵ open, ⇧↵ new tab)" autocomplete="off" />
         <span class="palette-kbd">Esc</span>
       </div>
       <div class="palette-results" id="paletteResults"></div>
@@ -303,48 +304,48 @@
   <div class="multi-toolbar" id="multiToolbar">
     <span class="multi-count" id="multiCount">0 selected</span>
     <div class="multi-actions">
-      <button class="multi-btn primary" id="multiBatchDl">⬇ Download All <span id="dlProgress"></span></button>
-      <button class="multi-btn" id="multiFavAll">★ Favorite All</button>
-      <button class="multi-btn" id="multiOpenAll">↗ Open All in Tabs</button>
+      <button class="multi-btn primary" id="multiBatchDl" type="button">⬇ Download All <span id="dlProgress"></span></button>
+      <button class="multi-btn" id="multiFavAll" type="button">★ Favorite All</button>
+      <button class="multi-btn" id="multiOpenAll" type="button">↗ Open All in Tabs</button>
     </div>
-    <button class="multi-cancel" id="multiCancel">Cancel</button>
+    <button class="multi-cancel" id="multiCancel" type="button">Cancel</button>
   </div>
 
   <main class="shell" id="libraryView">
-    <header class="header">
+    <div class="header">
       <div class="logo">✦ App Library</div>
       <div class="header-mid">
         <div class="search-wrap">
           <span class="search-icon">⌕</span>
-          <input id="searchInput" class="search" placeholder="Search… (Press /)" autocomplete="off"/>
+          <input id="searchInput" class="search" placeholder="Search… (Press /)" autocomplete="off" />
         </div>
       </div>
       <div class="header-actions">
-        <button id="paletteBtn" class="icon-btn" title="Command palette (Ctrl+K)">⌘</button>
-        <button id="multiSelectBtn" class="icon-btn" title="Multi-select mode">☑</button>
-        <button id="viewToggleBtn" class="icon-btn" title="Toggle list/grid">▦</button>
-        <button id="refreshBtn" class="icon-btn" title="Refresh catalog">↻</button>
-        <button id="settingsHeaderBtn" class="icon-btn" title="Settings (Ctrl+,)">⚙</button>
+        <button id="paletteBtn" class="icon-btn" title="Command palette (Ctrl+K)" type="button">⌘</button>
+        <button id="multiSelectBtn" class="icon-btn" title="Multi-select mode" type="button">☑</button>
+        <button id="viewToggleBtn" class="icon-btn" title="Toggle list/grid" type="button">▦</button>
+        <button id="refreshBtn" class="icon-btn" title="Refresh catalog" type="button">↻</button>
+        <button id="settingsHeaderBtn" class="icon-btn" title="Settings (Ctrl+,)" type="button">⚙</button>
       </div>
-    </header>
+    </div>
 
-    <div id="apiErrorBanner" class="api-banner"><span id="apiErrorText"></span><button class="api-banner-close" id="apiErrorClose">×</button></div>
-    <div id="whatsNewBanner" class="whats-new-banner hidden"><span id="whatsNewText"></span><button class="whats-new-close" id="whatsNewClose">×</button></div>
+    <div id="apiErrorBanner" class="api-banner"><span id="apiErrorText"></span><button class="api-banner-close" id="apiErrorClose" type="button">×</button></div>
+    <div id="whatsNewBanner" class="whats-new-banner hidden"><span id="whatsNewText"></span><button class="whats-new-close" id="whatsNewClose" type="button">×</button></div>
     <div id="updateBanner" class="update-banner hidden">
       <span class="update-banner-icon">🔄</span>
       <span class="update-banner-text">App Library <strong id="updateVersionLabel"></strong> is available!</span>
-      <button class="update-now-btn" id="updateNowBtn">Update Now!</button>
-      <button class="update-dl-btn" id="updateDlBtn">⬇ Download</button>
-      <button class="update-banner-close" id="updateBannerClose">×</button>
+      <button class="update-now-btn" id="updateNowBtn" type="button">Update Now!</button>
+      <button class="update-dl-btn" id="updateDlBtn" type="button">⬇ Download</button>
+      <button class="update-banner-close" id="updateBannerClose" type="button">×</button>
     </div>
 
     <div class="filter-bar">
       <div class="filter-tabs">
-        <button class="filter-tab active" data-filter="all">All <span class="filter-count" id="countAll">0</span></button>
-        <button class="filter-tab" data-filter="new" style="display:none">✨ New <span class="filter-count" id="countNew">0</span></button>
-        <button class="filter-tab" data-filter="favorites">★ Favorites <span class="filter-count" id="countFav">0</span></button>
-        <button class="filter-tab" data-filter="recent">🕐 Recent <span class="filter-count" id="countRecent">0</span></button>
-        <button class="filter-tab" data-filter="local">📁 Local <span class="filter-count" id="countLocal">0</span></button>
+        <button class="filter-tab active" data-filter="all" type="button">All <span class="filter-count" id="countAll">0</span></button>
+        <button class="filter-tab" data-filter="new" style="display:none" type="button">✨ New <span class="filter-count" id="countNew">0</span></button>
+        <button class="filter-tab" data-filter="favorites" type="button">★ Favorites <span class="filter-count" id="countFav">0</span></button>
+        <button class="filter-tab" data-filter="recent" type="button">🕐 Recent <span class="filter-count" id="countRecent">0</span></button>
+        <button class="filter-tab" data-filter="local" type="button">📁 Local <span class="filter-count" id="countLocal">0</span></button>
       </div>
       <div class="filter-right">
         <select id="sortSelect" class="sort-select">
@@ -362,7 +363,7 @@
       <div id="recentScroll" class="recent-scroll"></div>
     </div>
 
-    <section class="grid" id="appGrid"></section>
+    <div class="grid" id="appGrid"></div>
 
     <div class="shortcut-hint">
       <span><kbd>/</kbd> Search</span>
@@ -375,25 +376,25 @@
     </div>
   </main>
 
-  <section class="viewer" id="viewer"><iframe id="appFrame" title="App Viewer"></iframe></section>
+  <div class="viewer" id="viewer"><iframe id="appFrame" title="App Viewer"></iframe></div>
   <div id="exitZone" class="exit-zone"><button id="exitBtn" class="exit-btn" type="button">← Exit</button></div>
 
   <!-- SETTINGS MODAL -->
-  <section id="settingsModal" class="settings-modal">
+  <div id="settingsModal" class="settings-modal">
     <div class="settings-panel">
       <div class="settings-header">
         <div class="settings-title">⚙ Settings</div>
-        <button class="settings-close" id="closeSettingsBtn">×</button>
+        <button class="settings-close" id="closeSettingsBtn" type="button">×</button>
       </div>
       <div class="settings-body">
-        <nav class="settings-tabs">
-          <button class="stab active" data-tab="appearance">🎨 Appearance</button>
-          <button class="stab" data-tab="display">▦ Display</button>
-          <button class="stab" data-tab="background">✨ Background</button>
-          <button class="stab" data-tab="behavior">⚡ Behavior</button>
-          <button class="stab" data-tab="localapps">📁 Local Apps</button>
-          <button class="stab" data-tab="data">💾 Data</button>
-        </nav>
+        <div class="settings-tabs">
+          <button class="stab active" data-tab="appearance" type="button">🎨 Appearance</button>
+          <button class="stab" data-tab="display" type="button">▦ Display</button>
+          <button class="stab" data-tab="background" type="button">✨ Background</button>
+          <button class="stab" data-tab="behavior" type="button">⚡ Behavior</button>
+          <button class="stab" data-tab="localapps" type="button">📁 Local Apps</button>
+          <button class="stab" data-tab="data" type="button">💾 Data</button>
+        </div>
         <div class="settings-content">
           <div class="tab-pane active" id="tab-appearance">
             <div class="setting-group">
@@ -418,15 +419,15 @@
                 <div class="accent-swatch" data-color="#38bdf8" style="background:#38bdf8"></div>
                 <div class="accent-swatch" data-color="#f87171" style="background:#f87171"></div>
                 <div class="accent-swatch" data-color="#6366f1" style="background:#6366f1"></div>
-                <input type="color" id="accentColorPicker" value="#68d4ff" title="Custom color"/>
+                <input type="color" id="accentColorPicker" value="#68d4ff" title="Custom color" />
               </div>
             </div>
             <div class="setting-group">
               <div class="setting-group-label">Font Size</div>
               <div class="seg" id="fontSizeSeg">
-                <button class="seg-btn" data-fs="small">Small</button>
-                <button class="seg-btn active" data-fs="medium">Medium</button>
-                <button class="seg-btn" data-fs="large">Large</button>
+                <button class="seg-btn" data-fs="small" type="button">Small</button>
+                <button class="seg-btn active" data-fs="medium" type="button">Medium</button>
+                <button class="seg-btn" data-fs="large" type="button">Large</button>
               </div>
             </div>
           </div>
@@ -434,18 +435,18 @@
             <div class="setting-group">
               <div class="setting-group-label">Card Size</div>
               <div class="seg" id="cardSizeSeg">
-                <button class="seg-btn" data-cs="compact">Compact</button>
-                <button class="seg-btn active" data-cs="normal">Normal</button>
-                <button class="seg-btn" data-cs="large">Large</button>
+                <button class="seg-btn" data-cs="compact" type="button">Compact</button>
+                <button class="seg-btn active" data-cs="normal" type="button">Normal</button>
+                <button class="seg-btn" data-cs="large" type="button">Large</button>
               </div>
             </div>
             <p style="font-size:0.82em;color:var(--muted)">💡 View mode (grid/list) and sort are in the toolbar above the grid.</p>
-            <div class="toggle"><div><div class="toggle-label">Show descriptions</div><div class="toggle-desc">Display description text on cards</div></div><label class="switch"><input id="toggleDescriptions" type="checkbox" checked/><span class="switch-track"></span></label></div>
-            <div class="toggle"><div><div class="toggle-label">Show recently opened bar</div><div class="toggle-desc">Quick-access chips above the grid</div></div><label class="switch"><input id="toggleRecentSection" type="checkbox" checked/><span class="switch-track"></span></label></div>
-            <div class="toggle"><div><div class="toggle-label">Show usage stats on hover</div><div class="toggle-desc">Open count and last-used time</div></div><label class="switch"><input id="toggleUsageStats" type="checkbox" checked/><span class="switch-track"></span></label></div>
+            <div class="toggle"><div><div class="toggle-label">Show descriptions</div><div class="toggle-desc">Display description text on cards</div></div><label class="switch"><input id="toggleDescriptions" type="checkbox" checked="checked" /><span class="switch-track"></span></label></div>
+            <div class="toggle"><div><div class="toggle-label">Show recently opened bar</div><div class="toggle-desc">Quick-access chips above the grid</div></div><label class="switch"><input id="toggleRecentSection" type="checkbox" checked="checked" /><span class="switch-track"></span></label></div>
+            <div class="toggle"><div><div class="toggle-label">Show usage stats on hover</div><div class="toggle-desc">Open count and last-used time</div></div><label class="switch"><input id="toggleUsageStats" type="checkbox" checked="checked" /><span class="switch-track"></span></label></div>
           </div>
           <div class="tab-pane" id="tab-background">
-            <div class="toggle"><div><div class="toggle-label">Animated background</div><div class="toggle-desc">Particle effects that react to mouse movement</div></div><label class="switch"><input id="toggleBackground" type="checkbox" checked/><span class="switch-track"></span></label></div>
+            <div class="toggle"><div><div class="toggle-label">Animated background</div><div class="toggle-desc">Particle effects that react to mouse movement</div></div><label class="switch"><input id="toggleBackground" type="checkbox" checked="checked" /><span class="switch-track"></span></label></div>
             <div class="setting-group">
               <div class="setting-group-label">Background Style</div>
               <select id="bgMode" class="field">
@@ -463,24 +464,24 @@
             </div>
             <div class="setting-group">
               <div class="setting-group-label">Particle Density</div>
-              <div class="seg" id="densitySeg"><button class="seg-btn" data-density="low">Low</button><button class="seg-btn active" data-density="medium">Medium</button><button class="seg-btn" data-density="high">High</button></div>
+              <div class="seg" id="densitySeg"><button class="seg-btn" data-density="low" type="button">Low</button><button class="seg-btn active" data-density="medium" type="button">Medium</button><button class="seg-btn" data-density="high" type="button">High</button></div>
             </div>
             <div class="setting-group">
               <div class="setting-group-label">Animation Speed</div>
-              <div class="seg" id="speedSeg"><button class="seg-btn" data-speed="slow">Slow</button><button class="seg-btn active" data-speed="normal">Normal</button><button class="seg-btn" data-speed="fast">Fast</button></div>
+              <div class="seg" id="speedSeg"><button class="seg-btn" data-speed="slow" type="button">Slow</button><button class="seg-btn active" data-speed="normal" type="button">Normal</button><button class="seg-btn" data-speed="fast" type="button">Fast</button></div>
             </div>
           </div>
           <div class="tab-pane" id="tab-behavior">
-            <div class="toggle"><div><div class="toggle-label">Hover exit button</div><div class="toggle-desc">Show exit button on top-left hover in app view</div></div><label class="switch"><input id="toggleExit" type="checkbox" checked/><span class="switch-track"></span></label></div>
-            <div class="toggle"><div><div class="toggle-label">Open apps in new tab</div><div class="toggle-desc">Opens apps in a new browser tab instead of the viewer</div></div><label class="switch"><input id="toggleNewTab" type="checkbox"/><span class="switch-track"></span></label></div>
-            <div class="toggle"><div><div class="toggle-label">Warn on page leave</div><div class="toggle-desc">Confirm before closing or navigating away</div></div><label class="switch"><input id="toggleBeforeUnload" type="checkbox" checked/><span class="switch-track"></span></label></div>
+            <div class="toggle"><div><div class="toggle-label">Hover exit button</div><div class="toggle-desc">Show exit button on top-left hover in app view</div></div><label class="switch"><input id="toggleExit" type="checkbox" checked="checked" /><span class="switch-track"></span></label></div>
+            <div class="toggle"><div><div class="toggle-label">Open apps in new tab</div><div class="toggle-desc">Opens apps in a new browser tab instead of the viewer</div></div><label class="switch"><input id="toggleNewTab" type="checkbox" /><span class="switch-track"></span></label></div>
+            <div class="toggle"><div><div class="toggle-label">Warn on page leave</div><div class="toggle-desc">Confirm before closing or navigating away</div></div><label class="switch"><input id="toggleBeforeUnload" type="checkbox" checked="checked" /><span class="switch-track"></span></label></div>
           </div>
           <div class="tab-pane" id="tab-localapps">
             <div class="setting-group">
               <div class="setting-group-label">Add a Local App</div>
               <p style="font-size:0.84em;color:var(--muted)">Bookmarks for file:// or other URLs not in the online catalog.</p>
-              <div class="row"><input id="newAppName" class="field" placeholder="App name"/><input id="newAppPath" class="field" placeholder="https:// or file:///C:/app.html"/></div>
-              <input id="newAppDesc" class="field" placeholder="Short description (optional)"/>
+              <div class="row"><input id="newAppName" class="field" placeholder="App name" /><input id="newAppPath" class="field" placeholder="https:// or file:///C:/app.html" /></div>
+              <input id="newAppDesc" class="field" placeholder="Short description (optional)" />
               <button id="addAppBtn" class="open-btn" type="button" style="max-width:200px">+ Add Local App</button>
             </div>
             <div class="setting-group"><div class="setting-group-label">Saved Local Apps</div><div id="customAppList" class="custom-list"></div></div>
@@ -488,29 +489,29 @@
           <div class="tab-pane" id="tab-data">
             <div class="setting-group">
               <div class="setting-group-label">Settings Backup</div>
-              <div class="btn-row"><button class="btn-pill" id="exportSettingsBtn">↓ Export Settings</button><button class="btn-pill" id="importSettingsBtn">↑ Import Settings</button><input type="file" id="importFileInput" accept=".json" style="display:none"/></div>
+              <div class="btn-row"><button class="btn-pill" id="exportSettingsBtn" type="button">↓ Export Settings</button><button class="btn-pill" id="importSettingsBtn" type="button">↑ Import Settings</button><input type="file" id="importFileInput" accept=".json" style="display:none" /></div>
             </div>
             <div class="setting-group">
               <div class="setting-group-label">History</div>
-              <div class="btn-row"><button class="danger-btn" id="clearFavoritesBtn">Clear Favorites</button><button class="danger-btn" id="clearRecentBtn">Clear Recent History</button><button class="danger-btn" id="clearNewSeenBtn">Reset "New" flags</button></div>
+              <div class="btn-row"><button class="danger-btn" id="clearFavoritesBtn" type="button">Clear Favorites</button><button class="danger-btn" id="clearRecentBtn" type="button">Clear Recent History</button><button class="danger-btn" id="clearNewSeenBtn" type="button">Reset "New" flags</button></div>
             </div>
             <div class="setting-group">
               <div class="setting-group-label">App Cache (IndexedDB)</div>
               <p style="font-size:0.83em;color:var(--muted)">API apps are cached locally for offline access.</p>
-              <button class="danger-btn" id="clearCacheBtn" style="max-width:180px">Clear App Cache</button>
+              <button class="danger-btn" id="clearCacheBtn" style="max-width:180px" type="button">Clear App Cache</button>
             </div>
             <div class="setting-group">
               <div class="setting-group-label">Catalog API</div>
               <p class="catalog-url" id="catalogApiUrl"></p>
-              <button class="btn-pill" id="refreshCatalogBtn">↻ Refresh Catalog Now</button>
+              <button class="btn-pill" id="refreshCatalogBtn" type="button">↻ Refresh Catalog Now</button>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
 
-  <script>
+  <script type="text/javascript">/*<![CDATA[*/
   const APP_VERSION=2; // bump this number when releasing a new version
   const SK="app_library_v4",APPS_API="https://raw.githubusercontent.com/Nebula-6/apps/refs/heads/main/apps/data/apps.json",URL_BASE="https://nebula-6.github.io/";
   const DENSITY={low:0.5,medium:1,high:1.75},SPEED={slow:0.5,normal:1,fast:2};
@@ -535,6 +536,9 @@
 
   /* TOAST */
   function toast(msg,type="info"){const t=document.createElement("div");t.className="toast toast-"+type;t.textContent=msg;toastContainer.appendChild(t);requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add("visible")));setTimeout(()=>{t.classList.remove("visible");setTimeout(()=>t.remove(),300);},2800);}
+
+  /* IMG FALLBACK — replaces a broken img with a placeholder div (used in onerror handlers so no raw < appears in XML attribute values) */
+  function imgFallback(el,cls){const ph=document.createElement("div");ph.className=cls;ph.textContent="📦";el.parentNode.replaceChild(ph,el);}
 
   /* THEME */
   function hexRgb(h){return`${parseInt(h.slice(1,3),16)},${parseInt(h.slice(3,5),16)},${parseInt(h.slice(5,7),16)}`;}
@@ -664,7 +668,7 @@
   function updateCounts(){animCount($("countAll"),remoteItems.length+(state.localApps||[]).length);animCount($("countFav"),(state.favorites||[]).length);animCount($("countRecent"),(state.recentApps||[]).length);animCount($("countLocal"),(state.localApps||[]).length);animCount($("countNew"),newItems.length);const nt=document.querySelector('[data-filter="new"]');if(nt)nt.style.display=newItems.length>0?"":"none";}
 
   /* RECENT SECTION */
-  function renderRecent(){const sec=$("recentSection"),sc=$("recentScroll"),rec=state.recentApps||[];if(!rec.length||!state.settings.showRecentlyOpened){sec.style.display="none";return;}sec.style.display="grid";sc.innerHTML=rec.map(r=>`<div class="recent-chip js-rec" data-id="${ea(r.id)}" data-url="${ea(r.url)}" data-name="${ea(r.name)}">${r.icon?`<img class="recent-chip-icon" src="${ea(r.icon)}" crossorigin="anonymous" onerror="this.remove()">`:""} ${eh(r.name)}</div>`).join("");sc.querySelectorAll(".js-rec").forEach(c=>{c.addEventListener("click",()=>{const item=remoteItems.find(i=>i.id===c.dataset.id)||{id:c.dataset.id,name:c.dataset.name,url:c.dataset.url,fromApi:/^https?:/i.test(c.dataset.url)};launch(item);});});}
+  function renderRecent(){const sec=$("recentSection"),sc=$("recentScroll"),rec=state.recentApps||[];if(!rec.length||!state.settings.showRecentlyOpened){sec.style.display="none";return;}sec.style.display="grid";sc.innerHTML=rec.map(r=>`<div class="recent-chip js-rec" data-id="${ea(r.id)}" data-url="${ea(r.url)}" data-name="${ea(r.name)}">${r.icon?`<img class="recent-chip-icon" src="${ea(r.icon)}" crossorigin="anonymous" onerror="this.remove()" />`:""} ${eh(r.name)}</div>`).join("");sc.querySelectorAll(".js-rec").forEach(c=>{c.addEventListener("click",()=>{const item=remoteItems.find(i=>i.id===c.dataset.id)||{id:c.dataset.id,name:c.dataset.name,url:c.dataset.url,fromApi:/^https?:/i.test(c.dataset.url)};launch(item);});});}
 
   /* ALL ITEMS */
   function allItems(){return[...remoteItems.map(i=>({...i,fromApi:true})),...(state.localApps||[]).map(a=>({...a,url:a.path,fromApi:false,isLocal:true}))];}
@@ -681,7 +685,7 @@
   function cardHtml(item,term){
     const fav=isFav(item.id),isNew=newItems.some(n=>n.id===item.id),isCached=cachedUrls.has(item.url||item.path);
     const u=usage(item.id);
-    const icon=item.icon?`<img class="app-icon" src="${ea(item.icon)}" alt="" crossorigin="anonymous" onerror="this.setAttribute('hidden','')">`:`<span class="app-icon" hidden></span>`;
+    const icon=item.icon?`<img class="app-icon" src="${ea(item.icon)}" alt="" crossorigin="anonymous" onerror="this.setAttribute('hidden','hidden')" />`:`<span class="app-icon" hidden="hidden"></span>`;
     const desc=item.desc||item.description||(item.isLocal?"Local app launcher.":"Runs inside the app library.");
     const dlBtn=item.fromApi&&item.url?`<button class="icon-card-btn js-dl" data-url="${ea(item.url)}" data-name="${ea(item.name)}" title="Download as HTML" type="button">⬇</button>`:"";
     const metaHtml=state.settings.showUsageStats?`<div class="card-meta"><span>Opens: ${u.count}</span><span>Last: ${fmtT(u.lastOpened)}</span></div>`:"";
@@ -737,7 +741,7 @@
   function openSheet(item){
     const u=usage(item.id),isCached=cachedUrls.has(item.url||item.path),isNew=newItems.some(n=>n.id===item.id),fav=isFav(item.id);
     const desc=item.desc||item.description||"No description available.";
-    $("sheetHeader").innerHTML=`${item.icon?`<img class="sheet-icon" src="${ea(item.icon)}" crossorigin="anonymous" onerror="this.outerHTML='<div class=\\'sheet-icon-ph\\'>📦</div>'">`:`<div class="sheet-icon-ph">📦</div>`}<div class="sheet-title-area"><div class="sheet-name">${eh(item.name)}</div><div class="sheet-badge-row">${isNew?`<span class="badge badge-new">✨ New</span>`:""} ${isCached?`<span class="badge badge-cached">📶 Offline</span>`:""} ${item.isLocal?`<span class="badge badge-local">📁 Local</span>`:""} ${fav?`<span class="badge" style="background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.3);color:#fbbf24">★ Fav</span>`:""}</div><div class="sheet-url">${eh(item.url||item.path||"")}</div></div><button class="sheet-close" id="shCloseBtn">×</button>`;
+    $("sheetHeader").innerHTML=`${item.icon?`<img class="sheet-icon" src="${ea(item.icon)}" crossorigin="anonymous" onerror="imgFallback(this,'sheet-icon-ph')" />`:`<div class="sheet-icon-ph">📦</div>`}<div class="sheet-title-area"><div class="sheet-name">${eh(item.name)}</div><div class="sheet-badge-row">${isNew?`<span class="badge badge-new">✨ New</span>`:""} ${isCached?`<span class="badge badge-cached">📶 Offline</span>`:""} ${item.isLocal?`<span class="badge badge-local">📁 Local</span>`:""} ${fav?`<span class="badge" style="background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.3);color:#fbbf24">★ Fav</span>`:""}</div><div class="sheet-url">${eh(item.url||item.path||"")}</div></div><button class="sheet-close" id="shCloseBtn">×</button>`;
     $("sheetBody").innerHTML=`<p class="sheet-desc">${eh(desc)}</p><div class="sheet-stats"><div class="sheet-stat"><div class="sheet-stat-val">${u.count}</div><div class="sheet-stat-label">Times opened</div></div><div class="sheet-stat"><div class="sheet-stat-val">${fmtT(u.lastOpened)}</div><div class="sheet-stat-label">Last opened</div></div><div class="sheet-stat"><div class="sheet-stat-val">${isCached?"Yes":"No"}</div><div class="sheet-stat-label">Cached offline</div></div><div class="sheet-stat"><div class="sheet-stat-val">${fav?"Yes":"No"}</div><div class="sheet-stat-label">Favorited</div></div></div><div class="sheet-actions"><button class="open-btn js-sh-open" type="button">Open App</button>${item.fromApi&&item.url?`<button class="icon-card-btn js-sh-dl" data-url="${ea(item.url)}" data-name="${ea(item.name)}" style="width:auto;padding:0 14px;font-size:0.87em;color:var(--text)" type="button">⬇ Download</button>`:""}<button class="icon-card-btn js-sh-nt" data-url="${ea(item.url||item.path||"")}" style="width:auto;padding:0 14px;font-size:0.87em;color:var(--text)" type="button">↗ New Tab</button><button class="icon-card-btn js-sh-fav" style="width:auto;padding:0 14px;font-size:0.87em;color:var(--text)" type="button">${fav?"★ Unfavorite":"☆ Favorite"}</button></div>`;
     $("shCloseBtn").addEventListener("click",closeSheet);
     document.querySelector(".js-sh-open").addEventListener("click",()=>launch(item));
@@ -771,7 +775,7 @@
   function renderPalette(term){
     const t=term.trim().toLowerCase(),items=getPalItems(t);
     if(!items.length){paletteResults.innerHTML=`<div class="palette-empty">No apps found.</div>`;return;}
-    paletteResults.innerHTML=items.map((it,idx)=>`<div class="palette-item js-pi" data-idx="${idx}">${it.icon?`<img class="palette-icon" src="${ea(it.icon)}" crossorigin="anonymous" onerror="this.outerHTML='<div class=\\'palette-icon-ph\\'>📦</div>'">`:`<div class="palette-icon-ph">📦</div>`}<div class="palette-item-info"><div class="palette-item-name">${hl(it.name,t)}</div>${it.desc||it.description?`<div class="palette-item-desc">${eh((it.desc||it.description||"").slice(0,80))}</div>`:""}</div><div class="palette-item-action">↵ open</div></div>`).join("");
+    paletteResults.innerHTML=items.map((it,idx)=>`<div class="palette-item js-pi" data-idx="${idx}">${it.icon?`<img class="palette-icon" src="${ea(it.icon)}" crossorigin="anonymous" onerror="imgFallback(this,'palette-icon-ph')" />`:`<div class="palette-icon-ph">📦</div>`}<div class="palette-item-info"><div class="palette-item-name">${hl(it.name,t)}</div>${it.desc||it.description?`<div class="palette-item-desc">${eh((it.desc||it.description||"").slice(0,80))}</div>`:""}</div><div class="palette-item-action">↵ open</div></div>`).join("");
     paletteResults.querySelectorAll(".js-pi").forEach((el,idx)=>{el.addEventListener("click",()=>launch(items[idx]));el.addEventListener("mouseenter",()=>{palIdx=idx;updPalFocus(items.length);});});
   }
   function updPalFocus(total){paletteResults.querySelectorAll(".palette-item").forEach((el,i)=>{el.classList.toggle("pal-active",i===palIdx);if(i===palIdx)el.scrollIntoView({block:"nearest"});});}
@@ -952,6 +956,6 @@
 
   /* INIT */
   applyAll();renderApps();renderRecent();resizeCanvas();animateBg();loadCatalog();
-  </script>
+  /*]]>*/</script>
 </body>
 </html>
